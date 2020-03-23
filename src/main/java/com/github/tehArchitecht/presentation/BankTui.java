@@ -12,26 +12,27 @@ import org.apache.log4j.Logger;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.math.BigDecimal;
-import java.util.InputMismatchException;
 import java.util.List;
-import java.util.Scanner;
 import java.util.UUID;
 
+/**
+ * A TUI for the BankService class.
+ */
 public class BankTui {
     private final static Logger logger = Logger.getLogger(BankTui.class);
 
-    private Scanner in;
-    private PrintStream out;
+    private final InputReader in;
+    private final PrintStream out;
+
+    private final BankService bankService;
 
     private SecurityToken token = null;
-    private BankService bankService;
-
     private boolean running;
 
     public BankTui(InputStream in, PrintStream out) {
-        this.in = new Scanner(in);
+        this.in = new InputReader(in);
         this.out = out;
-        bankService = new BankService();
+        this.bankService = new BankService();
     }
 
     // -------------------------------------------------------------------------------------------------------------- //
@@ -101,7 +102,7 @@ public class BankTui {
         out.println("-- Регистрация --");
 
         out.print("Введите логин: ");
-        String userName = in.next();
+        String userName = inputUserName();
 
         Result<Boolean> result = bankService.isNameInUse(userName);
         if (handleFailedResult(result)) return;
@@ -111,13 +112,13 @@ public class BankTui {
             out.println("Ошибка. Пользователь с таким именем уже существует.");
         } else {
             out.print("Введите пароль: ");
-            String password = in.next();
+            String password = inputPassword();
 
             out.print("Введите телефон: ");
-            String phoneNumber = in.next();
+            String phoneNumber = inputPhoneNumber();
 
             out.print("Введите адрес: ");
-            String address = in.next();
+            String address = inputAddress();
 
             Status status = bankService.signUp(userName, password, address, phoneNumber);
             displayStatus(status);
@@ -143,10 +144,10 @@ public class BankTui {
         out.println("-- Вход по логину --");
 
         out.print("Введите логин: ");
-        String userName = in.next();
+        String userName = inputUserName();
 
         out.print("Введите пароль: ");
-        String password = in.next();
+        String password = inputPassword();
 
         Result<SecurityToken> result = bankService.signInWithName(userName, password);
         if (handleFailedResult(result)) return;
@@ -159,10 +160,10 @@ public class BankTui {
         out.println("-- Вход по номеру телефона --");
 
         out.print("Введите номер телефона: ");
-        String phoneNumber = in.next();
+        String phoneNumber = inputPhoneNumber();
 
         out.print("Введите пароль: ");
-        String password = in.next();
+        String password = inputPassword();
 
         Result<SecurityToken> result = bankService.signWithPhoneNumber(phoneNumber, password);
         if (handleFailedResult(result)) return;
@@ -176,7 +177,7 @@ public class BankTui {
     // -------------------------------------------------------------------------------------------------------------- //
 
     private void createAccount() {
-        out.println("-- Создание аккаунта --");
+        out.println("-- Создание счёта --");
 
         out.print("Введите валюту (EUR, RUB, USD): ");
         Currency currency = inputCurrency();
@@ -188,7 +189,7 @@ public class BankTui {
     private void depositFunds() {
         out.println("-- Пополнение счёта --");
 
-        UUID accountId = selectAccount();
+        UUID accountId = selectAccount("Выберите счёт: ");
         if (accountId == null) return;
 
         out.print("Введите валюту (EUR, RUB, USD): ");
@@ -204,11 +205,11 @@ public class BankTui {
     private void transferFunds() {
         out.println("-- Перевод средств --");
 
-        UUID accountId = selectAccount();
+        UUID accountId = selectAccount("Выберите счёт для списания средств: ");
         if (accountId == null) return;
 
         out.print("Введите номер телефона получателя: ");
-        String phoneNumber = in.next();
+        String phoneNumber = inputPhoneNumber();
 
         out.print("Введите валюту (EUR, RUB, USD): ");
         Currency currency = inputCurrency();
@@ -264,7 +265,12 @@ public class BankTui {
 
     // Input methods ------------------------------------------------------------------------------------------------ //
 
-    private UUID selectAccount() {
+    private String inputUserName() { return in.readLine(); }
+    private String inputPhoneNumber() { return in.readLine(); }
+    private String inputPassword() { return in.readLine(); }
+    private String inputAddress() { return in.readLine(); }
+
+    private UUID selectAccount(String message) {
         Result<List<AccountDto>> result = bankService.getUserAccounts(token);
         if (handleFailedResult(result)) return null;
 
@@ -274,11 +280,11 @@ public class BankTui {
             return null;
         }
 
-        return accounts.size() == 1 ? accounts.get(0).getId() : selectAccount(accounts);
+        return accounts.size() == 1 ? accounts.get(0).getId() : selectAccount(accounts, message);
     }
 
-    private UUID selectAccount(List<AccountDto> accounts) {
-        out.println("Выберите аккаунт: ");
+    private UUID selectAccount(List<AccountDto> accounts, String message) {
+        out.println(message);
         printAccounts(accounts);
 
         int count = accounts.size();
@@ -291,22 +297,20 @@ public class BankTui {
     private int inputOptionNumber(int numOptions) {
         while (true) {
             try {
-                int optionNumber = in.nextInt();
-                if (optionNumber >= 1 && optionNumber <= numOptions) {
+                int optionNumber = in.readInt();
+                if (optionNumber >= 1 && optionNumber <= numOptions)
                     return optionNumber;
-                }
-            } catch (InputMismatchException e) {
+            } catch (NumberFormatException e) {
                 logger.warn(e);
-                in.nextLine();
             }
-            out.print("Ошибка. Введите целое число от 1 до " + numOptions + " : ");
+            out.print("Ошибка. Введите целое число от 1 до " + numOptions + ": ");
         }
     }
 
     private Currency inputCurrency() {
         while (true) {
             try {
-                return Currency.valueOf(in.next().toUpperCase());
+                return in.readCurrency();
             } catch (IllegalArgumentException e) {
                 logger.warn(e);
             }
@@ -317,8 +321,8 @@ public class BankTui {
     private BigDecimal inputFunds() {
         while (true) {
             try {
-                return in.nextBigDecimal();
-            } catch (IllegalArgumentException e) {
+                return in.readBigDecimal();
+            } catch (NumberFormatException e) {
                 logger.warn(e);
             }
             out.print("Ошибка. Введите вещественное число: ");
@@ -341,11 +345,11 @@ public class BankTui {
         out.println(StatusMapper.statusToString(status));
     }
 
-    private void displayStatus(Result result) {
+    private void displayStatus(Result<?> result) {
         out.println(StatusMapper.statusToString(result));
     }
 
-    private boolean handleFailedResult(Result result) {
+    private boolean handleFailedResult(Result<?> result) {
         if (result.failure()) {
             displayStatus(result);
             return true;

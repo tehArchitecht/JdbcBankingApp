@@ -9,13 +9,17 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+/**
+ * Initializes the database from an SQL script located by the SCRIPT_PATH
+ * constant.
+ */
 public class DbInitializer {
     private static final Logger logger = Logger.getLogger(DbInitializer.class);
 
     private static final String SCRIPT_PATH = "create-schema.sql";
 
-    public static void Initize() {
-        InputStreamReader scriptStreamReader = new InputStreamReader(ResourceLoader.getRsource(SCRIPT_PATH));
+    public static void Initialize() {
+        InputStreamReader scriptStreamReader = new InputStreamReader(ResourceLoader.getResource(SCRIPT_PATH));
         ScriptReader scriptReader = new ScriptReader(scriptStreamReader);
 
         Connection connection = null;

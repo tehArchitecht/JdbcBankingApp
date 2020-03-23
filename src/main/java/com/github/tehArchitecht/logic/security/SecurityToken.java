@@ -3,8 +3,12 @@ package com.github.tehArchitecht.logic.security;
 import java.util.Objects;
 import java.util.UUID;
 
+/**
+ * Used to identify authorised users.
+ * @implNote Uses UUIDs as identifiers.
+ */
 public class SecurityToken {
-    private UUID uuid;
+    private final UUID uuid;
 
     SecurityToken() {
         uuid = UUID.randomUUID();

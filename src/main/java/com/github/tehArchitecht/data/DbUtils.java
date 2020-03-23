@@ -7,6 +7,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
+/**
+ * Provides methods to silently close JDBC objects. Logs caught exceptions
+ * using log4j.
+ */
 public class DbUtils {
     private final static Logger logger = Logger.getLogger(DbUtils.class);
 

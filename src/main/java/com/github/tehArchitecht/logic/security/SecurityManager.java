@@ -3,8 +3,12 @@ package com.github.tehArchitecht.logic.security;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Responsible for authorisation operations. Tracks authorised users by their
+ * token.
+ */
 public class SecurityManager {
-    private Map<SecurityToken, Long> tokenToUserId;
+    private final Map<SecurityToken, Long> tokenToUserId;
 
     public SecurityManager() {
         tokenToUserId = new HashMap<>();

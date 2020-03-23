@@ -20,7 +20,7 @@ public class Account {
     public Account(Long userId, Currency currency) {
         this.userId = userId;
         this.currency = currency;
-        this.balance = new BigDecimal(0);
+        this.balance = new BigDecimal("0.000");
     }
 }
 

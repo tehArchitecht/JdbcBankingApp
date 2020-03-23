@@ -6,17 +6,21 @@ import com.github.tehArchitecht.logic.dto.OperationDto;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Provides textual representation for various objects displayed by the BankTui
+ * class (it's main purpose is to display operation tables).
+ */
 class DataPresenter {
     private static final int UUID_LENGTH = 36;
     private static final int SUBSTRING_LENGTH = 12;
     private static final int BEGIN_INDEX = UUID_LENGTH - SUBSTRING_LENGTH;
 
-    private static final String newLine = String.format("%n|");
+    private static final String newLine = String.format("%n");
 
     public static String accountToString(AccountDto account) {
         return String.format(
@@ -28,10 +32,14 @@ class DataPresenter {
     }
 
     public static String accountListToString(List<AccountDto> accounts) {
-        String result = "";
-        for (int i = 1; i <= accounts.size(); i++)
-            result += i + ". " + accountToString(accounts.get(i-1)) + newLine;
-        return result;
+        StringBuilder result = new StringBuilder();
+
+        int size = accounts.size();
+        for (int i = 1; i < size; i++)
+            result.append(i).append(". ").append(accountToString(accounts.get(i - 1))).append(newLine);
+        result.append(size).append(". ").append(accountToString(accounts.get(size - 1)));
+
+        return result.toString();
     }
 
     public static String operationListToString(List<OperationDto> operations) {
@@ -39,7 +47,7 @@ class DataPresenter {
         final int NUM_ROWS = operations.size();
 
         String[][] columns = new String[NUM_COLUMNS][NUM_ROWS];
-        int columnWidths[] = new int[NUM_COLUMNS];
+        int[] columnWidths = new int[NUM_COLUMNS];
         String[] row = new String[NUM_COLUMNS];
 
         for (int r = 0; r < NUM_ROWS; r++) {
@@ -77,30 +85,30 @@ class DataPresenter {
                 columnWidths[c] = cell.length();
         }
 
-        String rule   = "+";
-        String header = "|";
+        StringBuilder rule   = new StringBuilder("+");
+        StringBuilder header = new StringBuilder("|");
         for (int c = 0; c < NUM_COLUMNS; c++) {
             String cell = headerColumns[c];
             int width = columnWidths[c];
-            rule += new String(new char[width]).replace('\0', '-') + "+";
-            header += String.format("%"+width+"s|", cell);
+            rule.append(new String(new char[width]).replace('\0', '-')).append("+");
+            header.append(String.format("%" + width + "s|", cell));
         }
 
-        String table = "";
-        table += rule + newLine + header + newLine + rule;
+        StringBuilder table = new StringBuilder();
+        table.append(rule).append(newLine).append(header).append(newLine).append(rule);
 
         for (int r = 0; r < NUM_ROWS; r++) {
-            table += newLine;
+            table.append(newLine).append("|");
             for (int c = 0; c < NUM_COLUMNS; c++) {
                 String cell = columns[c][r];
                 int width = columnWidths[c];
-                table += String.format("%"+width+"s|", cell);
+                table.append(String.format("%" + width + "s|", cell));
             }
         }
 
-        table += newLine + rule;
+        table.append(newLine).append(rule);
 
-        return table;
+        return table.toString();
     }
 
     private static String currencyToString(Currency currency) {
@@ -108,7 +116,7 @@ class DataPresenter {
     }
 
     private static String fundsToString(BigDecimal funds) {
-        return funds.toString();
+        return new DecimalFormat("0.000").format(funds);
     }
 
     private static String uuidToString(UUID uuid) {

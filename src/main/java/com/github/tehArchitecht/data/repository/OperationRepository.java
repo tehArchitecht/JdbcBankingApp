@@ -1,7 +1,7 @@
 package com.github.tehArchitecht.data.repository;
 
 import com.github.tehArchitecht.data.ConnectionFactory;
-import com.github.tehArchitecht.data.DbAccessException;
+import com.github.tehArchitecht.data.exception.DataAccessException;
 import com.github.tehArchitecht.data.DbUtils;
 import com.github.tehArchitecht.data.model.Operation;
 import com.github.tehArchitecht.data.model.Currency;
@@ -19,10 +19,9 @@ import java.util.UUID;
 public class OperationRepository {
     private final static Logger logger = Logger.getLogger(OperationRepository.class);
 
-    public static boolean save(Operation operation) throws DbAccessException {
+    public static void save(Operation operation) throws DataAccessException {
         Connection connection = null;
         PreparedStatement statement = null;
-        int updateStatus = 0;
 
         try {
             String statementString = "INSERT INTO Operation VALUES (default, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -39,41 +38,39 @@ public class OperationRepository {
             statement.setBigDecimal(8, operation.getReceiverInitialBalance());
             statement.setBigDecimal(9, operation.getReceiverResultingBalance());
 
-            updateStatus = statement.executeUpdate();
+            statement.executeUpdate();
         } catch (SQLException e) {
             logger.error("Couldn't insert operation " + operation.toString());
             logger.error(e);
-            throw new DbAccessException();
+            throw new DataAccessException();
         } finally {
             DbUtils.closeQuietly(statement);
             DbUtils.closeQuietly(connection);
         }
-
-        return updateStatus != 0;
     }
 
-    public static List<Operation> findAllBySenderAccountIdOrReceiverAccountId(UUID accountId) throws DbAccessException {
+    public static List<Operation> findDistinctBySenderAccountIdOrReceiverAccountId(UUID accountId)
+            throws DataAccessException {
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
-        List<Operation> operations = null;
+        List<Operation> operations = new ArrayList<>();
 
         try {
-            String statementString = "SELECT * FROM Operation WHERE sender_account_id=? OR receiver_account_id=?";
+            String statementString = "SELECT DISTINCT * FROM Operation WHERE sender_account_id=? OR receiver_account_id=?";
             connection = ConnectionFactory.getConnection();
             statement = connection.prepareStatement(statementString);
             statement.setObject(1, accountId);
             statement.setObject(2, accountId);
-            resultSet = statement.executeQuery();
 
-            operations = new ArrayList<>();
+            resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 operations.add(getFromResultSet(resultSet));
             }
         } catch (SQLException e) {
             logger.error("Couldn't select operations by account id " + accountId);
             logger.error(e);
-            throw new DbAccessException();
+            throw new DataAccessException();
         } finally {
             DbUtils.closeQuietly(resultSet);
             DbUtils.closeQuietly(statement);

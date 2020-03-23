@@ -1,7 +1,7 @@
 package com.github.tehArchitecht.data.repository;
 
 import com.github.tehArchitecht.data.ConnectionFactory;
-import com.github.tehArchitecht.data.DbAccessException;
+import com.github.tehArchitecht.data.exception.DataAccessException;
 import com.github.tehArchitecht.data.DbUtils;
 import com.github.tehArchitecht.data.model.User;
 import org.apache.log4j.Logger;
@@ -10,14 +10,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Optional;
 
 public class UserRepository {
     private final static Logger logger = Logger.getLogger(UserRepository.class);
 
-    public static boolean save(User user) throws DbAccessException {
+    public static void save(User user) throws DataAccessException {
         Connection connection = null;
         PreparedStatement statement = null;
-        int updateStatus = 0;
 
         try {
             String statementString = "INSERT INTO User VALUES (default, ?, ?, ?, ?)";
@@ -29,36 +29,34 @@ public class UserRepository {
             statement.setString(3, user.getAddress());
             statement.setString(4, user.getPhoneNumber());
 
-            updateStatus = statement.executeUpdate();
+            statement.executeUpdate();
         } catch (SQLException e) {
             logger.error("Couldn't insert user " + user.toString());
             logger.error(e);
-            throw new DbAccessException();
+            throw new DataAccessException();
         } finally {
             DbUtils.closeQuietly(statement);
             DbUtils.closeQuietly(connection);
         }
-
-        return updateStatus != 0;
     }
 
-    public static boolean existsByName(String name) throws DbAccessException {
-        return findByName(name) != null;
-    }
-
-    public static boolean existsByPhoneNumber(String phoneNumber) throws DbAccessException {
-        return findByPhoneNumber(phoneNumber) != null;
-    }
-
-    public static User findByName(String name) throws DbAccessException {
+    public static Optional<User> findByName(String name) throws DataAccessException {
         return findByNameOrPhoneNumber(name, null);
     }
 
-    public static User findByPhoneNumber(String phoneNumber) throws DbAccessException {
+    public static Optional<User> findByPhoneNumber(String phoneNumber) throws DataAccessException {
         return findByNameOrPhoneNumber(null, phoneNumber);
     }
 
-    private static User findByNameOrPhoneNumber(String name, String phoneNumber) throws DbAccessException {
+    public static boolean existsByName(String name) throws DataAccessException {
+        return findByName(name).isPresent();
+    }
+
+    public static boolean existsByPhoneNumber(String phoneNumber) throws DataAccessException {
+        return findByPhoneNumber(phoneNumber).isPresent();
+    }
+
+    private static Optional<User> findByNameOrPhoneNumber(String name, String phoneNumber) throws DataAccessException {
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
@@ -87,14 +85,14 @@ public class UserRepository {
                 logger.error("Couldn't select user by name: " + name);
             }
             logger.error(e);
-            throw new DbAccessException();
+            throw new DataAccessException();
         } finally {
             DbUtils.closeQuietly(resultSet);
             DbUtils.closeQuietly(statement);
             DbUtils.closeQuietly(connection);
         }
 
-        return user;
+        return Optional.ofNullable(user);
     }
 
     private static User getFromResultSet(ResultSet resultSet) throws SQLException {
