@@ -27,7 +27,7 @@ class AccountService {
         return AccountRepository.findAllByUserId(userId);
     }
 
-    public static int countUserAccounts(Long userId) throws DataAccessException {
+    static int countUserAccounts(Long userId) throws DataAccessException {
         return AccountRepository.countByUserId(userId);
     }
 

@@ -3,6 +3,7 @@ package com.github.tehArchitecht.jdbcbankingapp.logic;
 import com.github.tehArchitecht.jdbcbankingapp.data.model.Currency;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 /**
  * Provides a single static method convert to convert between different
@@ -14,7 +15,7 @@ public class CurrencyConverter {
     private static final BigDecimal USD_TO_RUB = new BigDecimal("72.62");
 
     private static final int PRECISION = 3;
-    private static final int MODE = BigDecimal.ROUND_HALF_UP;
+    private static final RoundingMode MODE = RoundingMode.HALF_UP;
 
     public static BigDecimal convert(BigDecimal amount, Currency from, Currency to) {
         BigDecimal result = amount;
