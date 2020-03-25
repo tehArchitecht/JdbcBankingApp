@@ -49,7 +49,7 @@ public class OperationRepository {
         }
     }
 
-    public static List<Operation> findDistinctBySenderAccountIdOrReceiverAccountId(UUID accountId)
+    public static List<Operation> findBySenderAccountIdOrReceiverAccountId(UUID accountId)
             throws DataAccessException {
         Connection connection = null;
         PreparedStatement statement = null;
@@ -57,7 +57,7 @@ public class OperationRepository {
         List<Operation> operations = new ArrayList<>();
 
         try {
-            String statementString = "SELECT DISTINCT * FROM Operation WHERE sender_account_id=? OR receiver_account_id=?";
+            String statementString = "SELECT * FROM Operation WHERE sender_account_id=? OR receiver_account_id=?";
             connection = ConnectionFactory.getConnection();
             statement = connection.prepareStatement(statementString);
             statement.setObject(1, accountId);

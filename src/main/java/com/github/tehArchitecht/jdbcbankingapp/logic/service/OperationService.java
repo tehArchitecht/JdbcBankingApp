@@ -13,6 +13,6 @@ class OperationService {
     }
 
     static List<Operation> findAllByAccountId(UUID accountId) throws DataAccessException {
-        return OperationRepository.findDistinctBySenderAccountIdOrReceiverAccountId(accountId);
+        return OperationRepository.findBySenderAccountIdOrReceiverAccountId(accountId);
     }
 }
