@@ -31,6 +31,8 @@ public enum Status {
     GET_USER_ACCOUNTS_SUCCESS,
     // createAccount
     CREATE_ACCOUNT_SUCCESS,
+    // setPrimaryAccount
+    SET_PRIMARY_ACCOUNT_SUCCESS,
     // depositFunds
     DEPOSIT_FUNDS_SUCCESS,
     // transferFunds

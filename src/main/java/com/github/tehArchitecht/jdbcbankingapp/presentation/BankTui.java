@@ -72,25 +72,27 @@ public class BankTui {
     private void authorizedScreen() {
         out.println("Доступные действия:");
         out.println("1. Создать счёт");
-        out.println("2. Внести средства");
-        out.println("3. Перевести средства");
-        out.println("4. Просмотреть историю операций");
-        out.println("5. Просмотреть привязанные счета");
-        out.println("6. Выйти из системы (аккаунта)");
-        out.println("7. Выйти из программы");
-        out.print("Введите номер (1, 2, 3, 4, 5, 6, 7): ");
+        out.println("2. Изменить основной счёт");
+        out.println("3. Внести средства");
+        out.println("4. Перевести средства");
+        out.println("5. Просмотреть историю операций");
+        out.println("6. Просмотреть привязанные счета");
+        out.println("7. Выйти из системы (аккаунта)");
+        out.println("8. Выйти из программы");
+        out.print("Введите номер (1, 2, 3, 4, 5, 6, 7, 8): ");
 
-        int optionNumber = inputOptionNumber(7);
+        int optionNumber = inputOptionNumber(8);
 
         out.println();
         switch (optionNumber) {
             case 1: createAccount(); break;
-            case 2: depositFunds(); break;
-            case 3: transferFunds(); break;
-            case 4: displayOperationHistory(); break;
-            case 5: displayUserAccounts(); break;
-            case 6: signOut(); break;
-            case 7: running = false; break;
+            case 2: setPrimaryAccount(); break;
+            case 3: depositFunds(); break;
+            case 4: transferFunds(); break;
+            case 5: displayOperationHistory(); break;
+            case 6: displayUserAccounts(); break;
+            case 7: signOut(); break;
+            case 8: running = false; break;
         }
     }
 
@@ -186,6 +188,16 @@ public class BankTui {
         displayStatus(status);
     }
 
+    private void setPrimaryAccount() {
+        out.println("-- Изменение основного счёта --");
+
+        UUID accountId = selectAccount("Выберите счёт: ");
+        if (accountId == null) return;
+
+        Status status = bankService.setPrimaryAccount(token, accountId);
+        displayStatus(status);
+    }
+
     private void depositFunds() {
         out.println("-- Пополнение счёта --");
 
@@ -270,6 +282,8 @@ public class BankTui {
     private String inputPassword() { return in.readLine(); }
     private String inputAddress() { return in.readLine(); }
 
+    private void waitForEnter() { in.readLine(); }
+
     private UUID selectAccount(String message) {
         Result<List<AccountDto>> result = bankService.getUserAccounts(token);
         if (handleFailedResult(result)) return null;
@@ -280,18 +294,26 @@ public class BankTui {
             return null;
         }
 
-        return accounts.size() == 1 ? accounts.get(0).getId() : selectAccount(accounts, message);
+        return selectAccount(accounts, message);
     }
 
     private UUID selectAccount(List<AccountDto> accounts, String message) {
-        out.println(message);
-        printAccounts(accounts);
-
         int count = accounts.size();
-        out.print("Введите номер (число от 1 до " + count + "): ");
+        if (count == 1) {
+            out.println("Вы имеете единственный счёт в системе: ");
+            printAccounts(accounts);
 
-        int optionNumber = inputOptionNumber(count);
-        return accounts.get(optionNumber-1).getId();
+            out.print("Нажмите Enter, чтобы продолжить...");
+            waitForEnter();
+            return accounts.get(0).getId();
+        } else {
+            out.println(message);
+            printAccounts(accounts);
+
+            out.print("Введите номер (число от 1 до " + count + "): ");
+            int optionNumber = inputOptionNumber(count);
+            return accounts.get(optionNumber-1).getId();
+        }
     }
 
     private int inputOptionNumber(int numOptions) {

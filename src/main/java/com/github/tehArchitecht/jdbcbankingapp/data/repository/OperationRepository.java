@@ -8,10 +8,7 @@ import com.github.tehArchitecht.jdbcbankingapp.data.model.Currency;
 
 import org.apache.log4j.Logger;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -19,14 +16,14 @@ import java.util.UUID;
 public class OperationRepository {
     private final static Logger logger = Logger.getLogger(OperationRepository.class);
 
-    public static void save(Operation operation) throws DataAccessException {
+    public static Operation save(Operation operation) throws DataAccessException {
         Connection connection = null;
         PreparedStatement statement = null;
 
         try {
             String statementString = "INSERT INTO Operation VALUES (default, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             connection = ConnectionFactory.getConnection();
-            statement = connection.prepareStatement(statementString);
+            statement = connection.prepareStatement(statementString, Statement.RETURN_GENERATED_KEYS);
 
             statement.setTimestamp(1, operation.getDate());
             statement.setString(2, operation.getCurrency().toString());
@@ -38,7 +35,19 @@ public class OperationRepository {
             statement.setBigDecimal(8, operation.getReceiverInitialBalance());
             statement.setBigDecimal(9, operation.getReceiverResultingBalance());
 
-            statement.executeUpdate();
+            int numAffectedRows = statement.executeUpdate();
+            if (numAffectedRows == 0) {
+                logger.error("Couldn't insert operation " + operation.toString() + ", no rows affected");
+                throw new DataAccessException();
+            }
+
+            ResultSet generatedKeys = statement.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                updateWithResultSet(operation, generatedKeys);
+            } else {
+                logger.error("Couldn't insert operation " + operation.toString() + ", no generated keys obtained");
+                throw new DataAccessException();
+            }
         } catch (SQLException e) {
             logger.error("Couldn't insert operation " + operation.toString());
             logger.error(e);
@@ -47,6 +56,8 @@ public class OperationRepository {
             DbUtils.closeQuietly(statement);
             DbUtils.closeQuietly(connection);
         }
+
+        return operation;
     }
 
     public static List<Operation> findBySenderAccountIdOrReceiverAccountId(UUID accountId)
@@ -93,5 +104,9 @@ public class OperationRepository {
                 resultSet.getBigDecimal("receiver_initial_balance"),
                 resultSet.getBigDecimal("receiver_resulting_balance")
         );
+    }
+
+    private static void updateWithResultSet(Operation operation, ResultSet resultSet) throws SQLException {
+        operation.setId(resultSet.getLong("id"));
     }
 }

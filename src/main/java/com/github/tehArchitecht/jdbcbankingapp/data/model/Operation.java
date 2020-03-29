@@ -1,16 +1,18 @@
 package com.github.tehArchitecht.jdbcbankingapp.data.model;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.AllArgsConstructor;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.UUID;
 
-import lombok.*;
-
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @ToString
+@AllArgsConstructor
 public class Operation {
     private Long id;
     private Timestamp date;

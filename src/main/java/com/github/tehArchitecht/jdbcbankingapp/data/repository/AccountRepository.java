@@ -9,33 +9,41 @@ import com.github.tehArchitecht.jdbcbankingapp.data.model.Currency;
 import org.apache.log4j.Logger;
 
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import java.sql.SQLException;
-
 public class AccountRepository {
     private final static Logger logger = Logger.getLogger(AccountRepository.class);
 
-    public static void save(Account account) throws DataAccessException {
+    public static Account save(Account account) throws DataAccessException {
         Connection connection = null;
         PreparedStatement statement = null;
 
         try {
-            String statementString = "INSERT INTO Account VALUES (default, default, ?, ?, ?)";
+            String statementString = "INSERT INTO Account VALUES (default, ?, ?, ?)";
             connection = ConnectionFactory.getConnection();
-            statement = connection.prepareStatement(statementString);
+            statement = connection.prepareStatement(statementString, Statement.RETURN_GENERATED_KEYS);
 
             statement.setLong(1, account.getUserId());
             statement.setBigDecimal(2, account.getBalance());
             statement.setString(3, account.getCurrency().toString());
 
-            statement.executeUpdate();
+            int numAffectedRows = statement.executeUpdate();
+            if (numAffectedRows == 0) {
+                logger.error("Couldn't insert account " + account.toString() + ", no rows affected");
+                throw new DataAccessException();
+            }
+
+            ResultSet generatedKeys = statement.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                updateWithResultSet(account, generatedKeys);
+            } else {
+                logger.error("Couldn't insert account " + account.toString() + ", no generated keys obtained");
+                throw new DataAccessException();
+            }
         } catch (SQLException e) {
             logger.error("Couldn't insert account " + account.toString());
             logger.error(e);
@@ -44,9 +52,11 @@ public class AccountRepository {
             DbUtils.closeQuietly(statement);
             DbUtils.closeQuietly(connection);
         }
+
+        return account;
     }
 
-    public static Optional<Account> findById(UUID accountId) throws DataAccessException {
+    public static Optional<Account> findById(UUID id) throws DataAccessException {
         Connection connection = null;
         PreparedStatement statement = null;
         ResultSet resultSet = null;
@@ -56,14 +66,14 @@ public class AccountRepository {
             String statementString = "SELECT * FROM Account WHERE id=?";
             connection = ConnectionFactory.getConnection();
             statement = connection.prepareStatement(statementString);
-            statement.setObject(1, accountId);
+            statement.setObject(1, id);
 
             resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 account = getFromResultSet(resultSet);
             }
         } catch (SQLException e) {
-            logger.error("Couldn't select account by id: " + accountId);
+            logger.error("Couldn't select account by id: " + id);
             logger.error(e);
             throw new DataAccessException();
         } finally {
@@ -75,7 +85,7 @@ public class AccountRepository {
         return Optional.ofNullable(account);
     }
 
-    public static void setAccountBalanceById(UUID accountId, BigDecimal balance) throws DataAccessException {
+    public static void setAccountBalanceById(UUID id, BigDecimal balance) throws DataAccessException {
         Connection connection = null;
         PreparedStatement statement = null;
 
@@ -85,11 +95,11 @@ public class AccountRepository {
             statement = connection.prepareStatement(statementString);
 
             statement.setBigDecimal(1, balance);
-            statement.setObject(2, accountId);
+            statement.setObject(2, id);
 
             statement.executeUpdate();
         } catch (SQLException e) {
-            logger.error("Couldn't update balance for account id " + accountId);
+            logger.error("Couldn't update balance for account id " + id);
             logger.error(e);
             throw new DataAccessException();
         } finally {
@@ -159,10 +169,13 @@ public class AccountRepository {
     private static Account getFromResultSet(ResultSet resultSet) throws SQLException {
         return new Account(
                 (UUID)resultSet.getObject("id"),
-                resultSet.getLong("number"),
                 resultSet.getLong("user_id"),
                 resultSet.getBigDecimal("balance"),
                 Currency.valueOf(resultSet.getString("currency"))
         );
+    }
+
+    private static void updateWithResultSet(Account account, ResultSet resultSet) throws SQLException {
+        account.setId((UUID) resultSet.getObject("id"));
     }
 }

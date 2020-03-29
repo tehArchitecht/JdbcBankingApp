@@ -46,6 +46,9 @@ public class StatusMapper {
             // createAccount
             case CREATE_ACCOUNT_SUCCESS:
                 return "Счёт создан.";
+            // setPrimaryAccount
+            case SET_PRIMARY_ACCOUNT_SUCCESS:
+                return "Основной счёт установлен.";
             // depositFunds
             case DEPOSIT_FUNDS_SUCCESS:
                 return "Пополнение счета прошло успешно.";

@@ -1,18 +1,19 @@
 package com.github.tehArchitecht.jdbcbankingapp.data.model;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.AllArgsConstructor;
+
 import java.math.BigDecimal;
 import java.util.UUID;
 
-import lombok.*;
-
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @ToString
+@AllArgsConstructor
 public class Account {
     private UUID id;
-    private Long number;
     private Long userId;
     private BigDecimal balance;
     private Currency currency;

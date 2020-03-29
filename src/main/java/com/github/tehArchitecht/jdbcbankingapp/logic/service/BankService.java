@@ -155,6 +155,19 @@ public class BankService {
         }
     }
 
+    public Status setPrimaryAccount(SecurityToken token, UUID accountId) {
+        try {
+            if (securityManager.isTokenInvalid(token))
+                return Status.BAD_TOKEN;
+            Long userId = securityManager.getUserId(token);
+
+            UserService.setPrimaryAccountId(userId, accountId);
+            return Status.SET_PRIMARY_ACCOUNT_SUCCESS;
+        } catch (DataAccessException e) {
+            return Status.FAILURE_INTERNAL_ERROR;
+        }
+    }
+
     // -------------------------------------------------------------------------------------------------------------- //
     // Operations with funds                                                                                          //
     // -------------------------------------------------------------------------------------------------------------- //

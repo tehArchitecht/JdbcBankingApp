@@ -2,7 +2,9 @@ package com.github.tehArchitecht.jdbcbankingapp.logic.service;
 
 import com.github.tehArchitecht.jdbcbankingapp.data.exception.DataAccessException;
 import com.github.tehArchitecht.jdbcbankingapp.data.model.Account;
+import com.github.tehArchitecht.jdbcbankingapp.data.model.User;
 import com.github.tehArchitecht.jdbcbankingapp.data.repository.AccountRepository;
+import com.github.tehArchitecht.jdbcbankingapp.data.repository.UserRepository;
 
 import java.math.BigDecimal;
 import java.util.Comparator;
@@ -12,7 +14,16 @@ import java.util.UUID;
 
 class AccountService {
     static void add(Account account) throws DataAccessException {
-        AccountRepository.save(account);
+        Account saved = AccountRepository.save(account);
+
+        Optional<User> optional = UserRepository.findById(account.getUserId());
+        if (!optional.isPresent())
+            throw new DataAccessException();
+
+        User user = optional.get();
+        if (user.getPrimaryAccountId() == null) {
+            UserRepository.setPrimaryAccountIdById(user.getId(), saved.getId());
+        }
     }
 
     static Optional<Account> get(UUID accountId) throws DataAccessException {
@@ -32,7 +43,9 @@ class AccountService {
     }
 
     static Optional<Account> getUserPrimaryAccount(Long userId) throws DataAccessException {
-        List<Account> accounts = AccountRepository.findAllByUserId(userId);
-        return accounts.stream().min(Comparator.comparing(Account::getNumber));
+        Optional<User> optional = UserRepository.findById(userId);
+        return optional.isPresent()
+                ? AccountRepository.findById(optional.get().getPrimaryAccountId())
+                : Optional.empty();
     }
 }
