@@ -43,8 +43,11 @@ public class BankService {
     }
 
     public Status signUp(SignUpRequest request) {
+        String userName = request.getUserName();
+        String phoneNumber = request.getPhoneNumber();
+
         try {
-            if (UserService.isNameInUse(request.getUserName()) || UserService.isPhoneNumberInUse(request.getPhoneNumber()))
+            if (UserService.isNameInUse(userName) || UserService.isPhoneNumberInUse(phoneNumber))
                 return Status.SING_UP_FAILURE_NAME_OR_PHONE_NUMBER_TAKEN;
 
             UserService.add(extractUser(request));
@@ -55,10 +58,13 @@ public class BankService {
     }
 
     public Result<SecurityToken> signInWithName(SignInWithNameRequest request) {
+        String userName = request.getUserName();
+        String password = request.getPassword();
+
         try {
             return signIn(
-                    UserService.getByName(request.getUserName()),
-                    request.getPassword(),
+                    UserService.getByName(userName),
+                    password,
                     Status.SIGN_IN_WITH_NAME_SUCCESS,
                     Status.SIGN_IN_WITH_NAME_FAILURE_WRONG_DATA
             );
@@ -68,10 +74,13 @@ public class BankService {
     }
 
     public Result<SecurityToken> signWithPhoneNumber(SignInWithPhoneNumberRequest request) {
+        String phoneNumber = request.getPhoneNumber();
+        String password = request.getPassword();
+
         try {
             return signIn(
-                    UserService.getByPhoneNumber(request.getPhoneNumber()),
-                    request.getPassword(),
+                    UserService.getByPhoneNumber(phoneNumber),
+                    password,
                     Status.SIGN_IN_WITH_PHONE_NUMBER_SUCCESS,
                     Status.SIGN_IN_WITH_PHONE_NUMBER_FAILURE_WRONG_DATA
             );
@@ -145,12 +154,14 @@ public class BankService {
     // -------------------------------------------------------------------------------------------------------------- //
 
     public Status createAccount(SecurityToken token, CreateAccountRequest request) {
+        Currency currency = request.getCurrency();
+
         try {
             if (securityManager.isTokenInvalid(token))
                 return Status.BAD_TOKEN;
             Long userId = securityManager.getUserId(token);
 
-            AccountService.add(new Account(userId, request.getCurrency()));
+            AccountService.add(new Account(userId, currency));
             return Status.CREATE_ACCOUNT_SUCCESS;
         } catch (DataAccessException e) {
             return Status.FAILURE_INTERNAL_ERROR;
@@ -158,12 +169,14 @@ public class BankService {
     }
 
     public Status setPrimaryAccount(SecurityToken token, SetPrimaryAccountRequest request) {
+        UUID accountId = request.getAccountId();
+
         try {
             if (securityManager.isTokenInvalid(token))
                 return Status.BAD_TOKEN;
             Long userId = securityManager.getUserId(token);
 
-            UserService.setPrimaryAccountId(userId, request.getAccountId());
+            UserService.setPrimaryAccountId(userId, accountId);
             return Status.SET_PRIMARY_ACCOUNT_SUCCESS;
         } catch (DataAccessException e) {
             return Status.FAILURE_INTERNAL_ERROR;
@@ -175,17 +188,17 @@ public class BankService {
     // -------------------------------------------------------------------------------------------------------------- //
 
     public Status depositFunds(SecurityToken token, DepositFundsRequest request) {
+        UUID accountId = request.getAccountId();
+        BigDecimal amount = request.getAmount();
+        Currency currency = request.getCurrency();
+
         try {
-            Result<Account> result = getAccountEntity(token, request.getAccountId());
+            Result<Account> result = getAccountEntity(token, accountId);
             if (result.failure())
                 return result.getStatus();
             Account account = result.getData();
 
-            BigDecimal converted = CurrencyConverter.convert(
-                    request.getAmount(),
-                    request.getCurrency(),
-                    account.getCurrency()
-            );
+            BigDecimal converted = CurrencyConverter.convert(amount, currency, account.getCurrency());
             BigDecimal newBalance = account.getBalance().add(converted);
             AccountService.setBalance(account.getId(), newBalance);
 
@@ -196,13 +209,18 @@ public class BankService {
     }
 
     public Status transferFunds(SecurityToken token, TransferFundsRequest request) {
+        UUID senderAccountId = request.getSenderAccountId();
+        String receiverPhoneNumber = request.getReceiverPhoneNumber();
+        BigDecimal amount = request.getAmount();
+        Currency currency = request.getCurrency();
+
         try {
-            Result<Account> result = getAccountEntity(token, request.getSenderAccountId());
+            Result<Account> result = getAccountEntity(token, senderAccountId);
             if (result.failure())
                 return result.getStatus();
             Account senderAccount = result.getData();
 
-            Optional<User> userOptional = UserService.getByPhoneNumber(request.getReceiverPhoneNumber());
+            Optional<User> userOptional = UserService.getByPhoneNumber(receiverPhoneNumber);
             if (!userOptional.isPresent())
                 return Status.TRANSFER_FUNDS_FAILURE_INVALID_PHONE_NUMBER;
             User receiver = userOptional.get();
@@ -216,16 +234,13 @@ public class BankService {
                 return Status.TRANSFER_FUNDS_FAILURE_RECEIVER_HAS_NO_PRIMARY_ACCOUNT;
             Account receiverAccount = accountOptional.get();
 
-            if (request.getSenderAccountId().equals(receiverAccount.getId()))
+            if (senderAccountId.equals(receiverAccount.getId()))
                 return Status.TRANSFER_FUNDS_FAILURE_SAME_ACCOUNT;
 
             BigDecimal senderInitialBalance = senderAccount.getBalance();
             BigDecimal receiverInitialBalance = receiverAccount.getBalance();
             Currency senderCurrency = senderAccount.getCurrency();
             Currency receiverCurrency = receiverAccount.getCurrency();
-
-            BigDecimal amount = request.getAmount();
-            Currency currency = request.getCurrency();
 
             BigDecimal senderAmount = CurrencyConverter.convert(amount, currency, senderCurrency);
             BigDecimal receiverAmount = CurrencyConverter.convert(amount, currency, receiverCurrency);
