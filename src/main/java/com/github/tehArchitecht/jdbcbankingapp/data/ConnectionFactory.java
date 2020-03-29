@@ -32,7 +32,7 @@ public class ConnectionFactory {
                 );
             } catch (IOException e) {
                 // Not going to provide a way to recover from this.
-                throw new Error("Couldn't load DB access information");
+                throw new Error("Couldn't load DB connection information");
             }
         }
 

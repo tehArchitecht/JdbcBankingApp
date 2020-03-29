@@ -3,8 +3,9 @@ package com.github.tehArchitecht.jdbcbankingapp.presentation;
 import com.github.tehArchitecht.jdbcbankingapp.data.model.Currency;
 import com.github.tehArchitecht.jdbcbankingapp.logic.Result;
 import com.github.tehArchitecht.jdbcbankingapp.logic.Status;
-import com.github.tehArchitecht.jdbcbankingapp.logic.dto.AccountDto;
-import com.github.tehArchitecht.jdbcbankingapp.logic.dto.OperationDto;
+import com.github.tehArchitecht.jdbcbankingapp.logic.dto.request.*;
+import com.github.tehArchitecht.jdbcbankingapp.logic.dto.response.AccountDto;
+import com.github.tehArchitecht.jdbcbankingapp.logic.dto.response.OperationDto;
 import com.github.tehArchitecht.jdbcbankingapp.security.SecurityToken;
 import com.github.tehArchitecht.jdbcbankingapp.logic.service.BankService;
 import org.apache.log4j.Logger;
@@ -102,11 +103,12 @@ public class BankTui {
 
     private void signUp() {
         out.println("-- Регистрация --");
+        SignUpRequest request = new SignUpRequest();
 
         out.print("Введите логин: ");
-        String userName = inputUserName();
+        request.setUserName(inputUserName());
 
-        Result<Boolean> result = bankService.isNameInUse(userName);
+        Result<Boolean> result = bankService.isNameInUse(request.getUserName());
         if (handleFailedResult(result)) return;
 
         boolean nameTaken = result.getData();
@@ -114,15 +116,15 @@ public class BankTui {
             out.println("Ошибка. Пользователь с таким именем уже существует.");
         } else {
             out.print("Введите пароль: ");
-            String password = inputPassword();
+            request.setPassword(inputPassword());
 
             out.print("Введите телефон: ");
-            String phoneNumber = inputPhoneNumber();
+            request.setPhoneNumber(inputPhoneNumber());
 
             out.print("Введите адрес: ");
-            String address = inputAddress();
+            request.setAddress(inputAddress());
 
-            Status status = bankService.signUp(userName, password, address, phoneNumber);
+            Status status = bankService.signUp(request);
             displayStatus(status);
         }
     }
@@ -144,14 +146,15 @@ public class BankTui {
 
     private void signInWithName() {
         out.println("-- Вход по логину --");
+        SignInWithNameRequest request = new SignInWithNameRequest();
 
         out.print("Введите логин: ");
-        String userName = inputUserName();
+        request.setUserName(inputUserName());
 
         out.print("Введите пароль: ");
-        String password = inputPassword();
+        request.setPassword(inputPassword());
 
-        Result<SecurityToken> result = bankService.signInWithName(userName, password);
+        Result<SecurityToken> result = bankService.signInWithName(request);
         if (handleFailedResult(result)) return;
 
         token = result.getData();
@@ -160,14 +163,15 @@ public class BankTui {
 
     private void signInWithPhoneNumber() {
         out.println("-- Вход по номеру телефона --");
+        SignInWithPhoneNumberRequest request = new SignInWithPhoneNumberRequest();
 
         out.print("Введите номер телефона: ");
-        String phoneNumber = inputPhoneNumber();
+        request.setPhoneNumber(inputPhoneNumber());
 
         out.print("Введите пароль: ");
-        String password = inputPassword();
+        request.setPassword(inputPassword());
 
-        Result<SecurityToken> result = bankService.signWithPhoneNumber(phoneNumber, password);
+        Result<SecurityToken> result = bankService.signWithPhoneNumber(request);
         if (handleFailedResult(result)) return;
 
         token = result.getData();
@@ -180,56 +184,63 @@ public class BankTui {
 
     private void createAccount() {
         out.println("-- Создание счёта --");
+        CreateAccountRequest request = new CreateAccountRequest();
 
         out.print("Введите валюту (EUR, RUB, USD): ");
-        Currency currency = inputCurrency();
+        request.setCurrency(inputCurrency());
 
-        Status status = bankService.createAccount(token, currency);
+        Status status = bankService.createAccount(token, request);
         displayStatus(status);
     }
 
     private void setPrimaryAccount() {
         out.println("-- Изменение основного счёта --");
+        SetPrimaryAccountRequest request = new SetPrimaryAccountRequest();
 
         UUID accountId = selectAccount("Выберите счёт: ");
         if (accountId == null) return;
+        request.setAccountId(accountId);
 
-        Status status = bankService.setPrimaryAccount(token, accountId);
+        Status status = bankService.setPrimaryAccount(token, request);
         displayStatus(status);
     }
 
     private void depositFunds() {
         out.println("-- Пополнение счёта --");
+        DepositFundsRequest request = new DepositFundsRequest();
 
         UUID accountId = selectAccount("Выберите счёт: ");
         if (accountId == null) return;
+        request.setAccountId(accountId);
 
         out.print("Введите валюту (EUR, RUB, USD): ");
-        Currency currency = inputCurrency();
+        request.setCurrency(inputCurrency());
 
         out.print("Введите сумму: ");
-        BigDecimal amount = inputFunds();
+        request.setAmount(inputFunds());
 
-        Status status = bankService.depositFunds(token, accountId, currency, amount);
+        Status status = bankService.depositFunds(token, request);
         out.println(StatusMapper.statusToString(status));
     }
 
     private void transferFunds() {
         out.println("-- Перевод средств --");
+        TransferFundsRequest request = new TransferFundsRequest();
 
         UUID accountId = selectAccount("Выберите счёт для списания средств: ");
         if (accountId == null) return;
+        request.setSenderAccountId(accountId);
 
         out.print("Введите номер телефона получателя: ");
-        String phoneNumber = inputPhoneNumber();
+        request.setReceiverPhoneNumber(inputPhoneNumber());
 
         out.print("Введите валюту (EUR, RUB, USD): ");
-        Currency currency = inputCurrency();
+        request.setCurrency(inputCurrency());
 
         out.print("Введите сумму: ");
-        BigDecimal amount = inputFunds();
+        request.setAmount(inputFunds());
 
-        Status status = bankService.transferFunds(token, accountId, phoneNumber, amount, currency);
+        Status status = bankService.transferFunds(token, request);
         displayStatus(status);
     }
 

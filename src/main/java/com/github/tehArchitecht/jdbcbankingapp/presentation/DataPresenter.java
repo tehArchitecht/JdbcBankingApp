@@ -1,8 +1,8 @@
 package com.github.tehArchitecht.jdbcbankingapp.presentation;
 
 import com.github.tehArchitecht.jdbcbankingapp.data.model.Currency;
-import com.github.tehArchitecht.jdbcbankingapp.logic.dto.AccountDto;
-import com.github.tehArchitecht.jdbcbankingapp.logic.dto.OperationDto;
+import com.github.tehArchitecht.jdbcbankingapp.logic.dto.response.AccountDto;
+import com.github.tehArchitecht.jdbcbankingapp.logic.dto.response.OperationDto;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;

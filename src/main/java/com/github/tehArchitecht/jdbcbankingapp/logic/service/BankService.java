@@ -8,7 +8,9 @@ import com.github.tehArchitecht.jdbcbankingapp.data.model.User;
 import com.github.tehArchitecht.jdbcbankingapp.logic.CurrencyConverter;
 import com.github.tehArchitecht.jdbcbankingapp.logic.Result;
 import com.github.tehArchitecht.jdbcbankingapp.logic.Status;
-import com.github.tehArchitecht.jdbcbankingapp.logic.dto.*;
+import com.github.tehArchitecht.jdbcbankingapp.logic.dto.request.*;
+import com.github.tehArchitecht.jdbcbankingapp.logic.dto.response.AccountDto;
+import com.github.tehArchitecht.jdbcbankingapp.logic.dto.response.OperationDto;
 import com.github.tehArchitecht.jdbcbankingapp.security.SecurityManager;
 import com.github.tehArchitecht.jdbcbankingapp.security.SecurityToken;
 
@@ -40,23 +42,23 @@ public class BankService {
         }
     }
 
-    public Status signUp (String name, String password, String address, String phoneNumber) {
+    public Status signUp(SignUpRequest request) {
         try {
-            if (UserService.isNameInUse(name) || UserService.isPhoneNumberInUse(phoneNumber))
+            if (UserService.isNameInUse(request.getUserName()) || UserService.isPhoneNumberInUse(request.getPhoneNumber()))
                 return Status.SING_UP_FAILURE_NAME_OR_PHONE_NUMBER_TAKEN;
 
-            UserService.add(new User(name, password, address, phoneNumber));
+            UserService.add(extractUser(request));
             return Status.SIGN_UP_SUCCESS;
         } catch (DataAccessException e) {
             return Status.FAILURE_INTERNAL_ERROR;
         }
     }
 
-    public Result<SecurityToken> signInWithName(String userName, String password) {
+    public Result<SecurityToken> signInWithName(SignInWithNameRequest request) {
         try {
             return signIn(
-                    UserService.getByName(userName),
-                    password,
+                    UserService.getByName(request.getUserName()),
+                    request.getPassword(),
                     Status.SIGN_IN_WITH_NAME_SUCCESS,
                     Status.SIGN_IN_WITH_NAME_FAILURE_WRONG_DATA
             );
@@ -65,11 +67,11 @@ public class BankService {
         }
     }
 
-    public Result<SecurityToken> signWithPhoneNumber(String phoneNumber, String password) {
+    public Result<SecurityToken> signWithPhoneNumber(SignInWithPhoneNumberRequest request) {
         try {
             return signIn(
-                    UserService.getByPhoneNumber(phoneNumber),
-                    password,
+                    UserService.getByPhoneNumber(request.getPhoneNumber()),
+                    request.getPassword(),
                     Status.SIGN_IN_WITH_PHONE_NUMBER_SUCCESS,
                     Status.SIGN_IN_WITH_PHONE_NUMBER_FAILURE_WRONG_DATA
             );
@@ -142,26 +144,26 @@ public class BankService {
     // Account related operations                                                                                     //
     // -------------------------------------------------------------------------------------------------------------- //
 
-    public Status createAccount(SecurityToken token, Currency currency) {
+    public Status createAccount(SecurityToken token, CreateAccountRequest request) {
         try {
             if (securityManager.isTokenInvalid(token))
                 return Status.BAD_TOKEN;
             Long userId = securityManager.getUserId(token);
 
-            AccountService.add(new Account(userId, currency));
+            AccountService.add(new Account(userId, request.getCurrency()));
             return Status.CREATE_ACCOUNT_SUCCESS;
         } catch (DataAccessException e) {
             return Status.FAILURE_INTERNAL_ERROR;
         }
     }
 
-    public Status setPrimaryAccount(SecurityToken token, UUID accountId) {
+    public Status setPrimaryAccount(SecurityToken token, SetPrimaryAccountRequest request) {
         try {
             if (securityManager.isTokenInvalid(token))
                 return Status.BAD_TOKEN;
             Long userId = securityManager.getUserId(token);
 
-            UserService.setPrimaryAccountId(userId, accountId);
+            UserService.setPrimaryAccountId(userId, request.getAccountId());
             return Status.SET_PRIMARY_ACCOUNT_SUCCESS;
         } catch (DataAccessException e) {
             return Status.FAILURE_INTERNAL_ERROR;
@@ -172,14 +174,18 @@ public class BankService {
     // Operations with funds                                                                                          //
     // -------------------------------------------------------------------------------------------------------------- //
 
-    public Status depositFunds(SecurityToken token, UUID accountId, Currency currency, BigDecimal amount) {
+    public Status depositFunds(SecurityToken token, DepositFundsRequest request) {
         try {
-            Result<Account> result = getAccountEntity(token, accountId);
+            Result<Account> result = getAccountEntity(token, request.getAccountId());
             if (result.failure())
                 return result.getStatus();
             Account account = result.getData();
 
-            BigDecimal converted = CurrencyConverter.convert(amount, currency, account.getCurrency());
+            BigDecimal converted = CurrencyConverter.convert(
+                    request.getAmount(),
+                    request.getCurrency(),
+                    account.getCurrency()
+            );
             BigDecimal newBalance = account.getBalance().add(converted);
             AccountService.setBalance(account.getId(), newBalance);
 
@@ -189,15 +195,14 @@ public class BankService {
         }
     }
 
-    public Status transferFunds(SecurityToken token, UUID senderAccountId, String receiverPhoneNumber,
-                                BigDecimal amount, Currency currency) {
+    public Status transferFunds(SecurityToken token, TransferFundsRequest request) {
         try {
-            Result<Account> result = getAccountEntity(token, senderAccountId);
+            Result<Account> result = getAccountEntity(token, request.getSenderAccountId());
             if (result.failure())
                 return result.getStatus();
             Account senderAccount = result.getData();
 
-            Optional<User> userOptional = UserService.getByPhoneNumber(receiverPhoneNumber);
+            Optional<User> userOptional = UserService.getByPhoneNumber(request.getReceiverPhoneNumber());
             if (!userOptional.isPresent())
                 return Status.TRANSFER_FUNDS_FAILURE_INVALID_PHONE_NUMBER;
             User receiver = userOptional.get();
@@ -211,13 +216,16 @@ public class BankService {
                 return Status.TRANSFER_FUNDS_FAILURE_RECEIVER_HAS_NO_PRIMARY_ACCOUNT;
             Account receiverAccount = accountOptional.get();
 
-            if (senderAccountId.equals(receiverAccount.getId()))
+            if (request.getSenderAccountId().equals(receiverAccount.getId()))
                 return Status.TRANSFER_FUNDS_FAILURE_SAME_ACCOUNT;
 
             BigDecimal senderInitialBalance = senderAccount.getBalance();
             BigDecimal receiverInitialBalance = receiverAccount.getBalance();
             Currency senderCurrency = senderAccount.getCurrency();
             Currency receiverCurrency = receiverAccount.getCurrency();
+
+            BigDecimal amount = request.getAmount();
+            Currency currency = request.getCurrency();
 
             BigDecimal senderAmount = CurrencyConverter.convert(amount, currency, senderCurrency);
             BigDecimal receiverAmount = CurrencyConverter.convert(amount, currency, receiverCurrency);
@@ -291,6 +299,15 @@ public class BankService {
         } catch (DataAccessException e) {
             return Result.ofFailure(Status.FAILURE_INTERNAL_ERROR);
         }
+    }
+
+    private User extractUser(SignUpRequest request) {
+        return new User(
+                request.getUserName(),
+                request.getPassword(),
+                request.getAddress(),
+                request.getPhoneNumber()
+        );
     }
 
     private AccountDto convertAccount(Account account) {

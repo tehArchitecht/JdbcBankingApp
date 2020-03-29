@@ -1,4 +1,4 @@
-package com.github.tehArchitecht.jdbcbankingapp.logic.dto;
+package com.github.tehArchitecht.jdbcbankingapp.logic.dto.response;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -11,7 +11,6 @@ import lombok.AllArgsConstructor;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
 public class AccountDto {
     private UUID id;
