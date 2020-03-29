@@ -5,7 +5,7 @@ import com.github.tehArchitecht.jdbcbankingapp.logic.Result;
 import com.github.tehArchitecht.jdbcbankingapp.logic.Status;
 import com.github.tehArchitecht.jdbcbankingapp.logic.dto.AccountDto;
 import com.github.tehArchitecht.jdbcbankingapp.logic.dto.OperationDto;
-import com.github.tehArchitecht.jdbcbankingapp.logic.security.SecurityToken;
+import com.github.tehArchitecht.jdbcbankingapp.security.SecurityToken;
 import com.github.tehArchitecht.jdbcbankingapp.logic.service.BankService;
 import org.apache.log4j.Logger;
 

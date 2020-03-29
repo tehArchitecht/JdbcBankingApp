@@ -9,8 +9,8 @@ import com.github.tehArchitecht.jdbcbankingapp.logic.CurrencyConverter;
 import com.github.tehArchitecht.jdbcbankingapp.logic.Result;
 import com.github.tehArchitecht.jdbcbankingapp.logic.Status;
 import com.github.tehArchitecht.jdbcbankingapp.logic.dto.*;
-import com.github.tehArchitecht.jdbcbankingapp.logic.security.SecurityManager;
-import com.github.tehArchitecht.jdbcbankingapp.logic.security.SecurityToken;
+import com.github.tehArchitecht.jdbcbankingapp.security.SecurityManager;
+import com.github.tehArchitecht.jdbcbankingapp.security.SecurityToken;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;

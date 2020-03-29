@@ -1,4 +1,4 @@
-package com.github.tehArchitecht.jdbcbankingapp.logic.security;
+package com.github.tehArchitecht.jdbcbankingapp.security;
 
 import java.util.Objects;
 import java.util.UUID;
