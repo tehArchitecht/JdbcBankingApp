@@ -13,6 +13,7 @@ import com.github.tehArchitecht.jdbcbankingapp.logic.dto.response.AccountDto;
 import com.github.tehArchitecht.jdbcbankingapp.logic.dto.response.OperationDto;
 import com.github.tehArchitecht.jdbcbankingapp.security.SecurityManager;
 import com.github.tehArchitecht.jdbcbankingapp.security.SecurityToken;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -50,7 +51,9 @@ public class BankService {
             if (UserService.isNameInUse(userName) || UserService.isPhoneNumberInUse(phoneNumber))
                 return Status.SING_UP_FAILURE_NAME_OR_PHONE_NUMBER_TAKEN;
 
-            UserService.add(extractUser(request));
+            User user = extractUser(request);
+            user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
+            UserService.add(user);
             return Status.SIGN_UP_SUCCESS;
         } catch (DataAccessException e) {
             return Status.FAILURE_INTERNAL_ERROR;
@@ -95,7 +98,7 @@ public class BankService {
             return Result.ofFailure(failure);
 
         User user = optional.get();
-        if (user.getPassword().equals(password))
+        if (BCrypt.checkpw(password, user.getPassword()))
             return Result.ofSuccess(success, securityManager.signIn(user.getId()));
         else
             return Result.ofFailure(failure);
