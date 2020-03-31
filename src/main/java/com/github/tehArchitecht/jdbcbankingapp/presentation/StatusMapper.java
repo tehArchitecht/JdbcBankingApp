@@ -65,16 +65,15 @@ public class StatusMapper {
                 return "Ошибка. Попытка перевода средств на счёт списания.";
             case TRANSFER_FUNDS_FAILURE_INSUFFICIENT_FUNDS:
                 return "Ошибка. На счету недостаточно средств.";
-            // helper status values [start]
+            // helper status values
             case SUCCESS:
                 return null;
-            // helper status values [end]
+            // default
             default: throw new IllegalArgumentException(status.toString());
-
         }
     }
 
     public static String statusToString(Result<?> result) {
-        return  statusToString(result.getStatus());
+        return statusToString(result.getStatus());
     }
 }
