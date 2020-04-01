@@ -341,7 +341,7 @@ public class BankService {
                 account.getId(),
                 account.getBalance(),
                 account.getCurrency(),
-                primaryAccountId.equals(account.getId())
+                account.getId().equals(primaryAccountId)
         );
     }
 
