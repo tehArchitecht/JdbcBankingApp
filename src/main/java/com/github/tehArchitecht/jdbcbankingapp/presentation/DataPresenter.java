@@ -23,12 +23,13 @@ class DataPresenter {
     private static final String newLine = String.format("%n");
 
     public static String accountToString(AccountDto account) {
-        return String.format(
+        String base = String.format(
                 "%s (%s %s)",
                 uuidToString(account.getId()),
                 fundsToString(account.getBalance()),
                 currencyToString(account.getCurrency())
         );
+        return account.isPrimary() ? base + " [основной]" : base;
     }
 
     public static String accountListToString(List<AccountDto> accounts) {

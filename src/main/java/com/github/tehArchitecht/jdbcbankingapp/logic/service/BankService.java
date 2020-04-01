@@ -5,6 +5,7 @@ import com.github.tehArchitecht.jdbcbankingapp.data.model.Account;
 import com.github.tehArchitecht.jdbcbankingapp.data.model.Currency;
 import com.github.tehArchitecht.jdbcbankingapp.data.model.Operation;
 import com.github.tehArchitecht.jdbcbankingapp.data.model.User;
+import com.github.tehArchitecht.jdbcbankingapp.data.repository.UserRepository;
 import com.github.tehArchitecht.jdbcbankingapp.logic.CurrencyConverter;
 import com.github.tehArchitecht.jdbcbankingapp.logic.Result;
 import com.github.tehArchitecht.jdbcbankingapp.logic.Status;
@@ -118,8 +119,15 @@ public class BankService {
                 return Result.ofFailure(Status.BAD_TOKEN);
             Long userId = securityManager.getUserId(token);
 
+            Optional<User> optional = UserRepository.findById(userId);
+            if (!optional.isPresent())
+                return Result.ofFailure(Status.FAILURE_INTERNAL_ERROR);
+            UUID primaryAccountId = optional.get().getPrimaryAccountId();
+
             List<Account> accounts = AccountService.getUserAccounts(userId);
-            List<AccountDto> accountDtos = accounts.stream().map(this::convertAccount).collect(Collectors.toList());
+            List<AccountDto> accountDtos = accounts.stream()
+                    .map((Account account) -> convertAccount(account, primaryAccountId))
+                    .collect(Collectors.toList());
             return Result.ofSuccess(Status.GET_USER_ACCOUNTS_SUCCESS, accountDtos);
         } catch (DataAccessException e) {
             return Result.ofFailure(Status.FAILURE_INTERNAL_ERROR);
@@ -328,11 +336,12 @@ public class BankService {
         );
     }
 
-    private AccountDto convertAccount(Account account) {
+    private AccountDto convertAccount(Account account, UUID primaryAccountId) {
         return new AccountDto(
                 account.getId(),
                 account.getBalance(),
-                account.getCurrency()
+                account.getCurrency(),
+                primaryAccountId.equals(account.getId())
         );
     }
 
