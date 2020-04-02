@@ -137,35 +137,6 @@ public class AccountRepository {
         return accounts;
     }
 
-    public static int countByUserId(Long userId) throws DataAccessException {
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-        int count = 0;
-
-        try {
-            String statementString = "SELECT COUNT(*) FROM Account WHERE user_id=?";
-            connection = ConnectionFactory.getConnection();
-            statement = connection.prepareStatement(statementString);
-            statement.setObject(1, userId);
-
-            resultSet = statement.executeQuery();
-            if (resultSet.next()) {
-                count = resultSet.getInt(1);
-            }
-        } catch (SQLException e) {
-            logger.error("Couldn't count accounts by user id: " + userId);
-            logger.error(e);
-            throw new DataAccessException();
-        } finally {
-            DbUtils.closeQuietly(resultSet);
-            DbUtils.closeQuietly(statement);
-            DbUtils.closeQuietly(connection);
-        }
-
-        return count;
-    }
-
     private static Account getFromResultSet(ResultSet resultSet) throws SQLException {
         return new Account(
                 (UUID)resultSet.getObject("id"),

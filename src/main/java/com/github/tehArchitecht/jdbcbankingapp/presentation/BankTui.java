@@ -6,8 +6,11 @@ import com.github.tehArchitecht.jdbcbankingapp.logic.Status;
 import com.github.tehArchitecht.jdbcbankingapp.logic.dto.request.*;
 import com.github.tehArchitecht.jdbcbankingapp.logic.dto.response.AccountDto;
 import com.github.tehArchitecht.jdbcbankingapp.logic.dto.response.OperationDto;
+import com.github.tehArchitecht.jdbcbankingapp.logic.manager.AccountManager;
+import com.github.tehArchitecht.jdbcbankingapp.logic.manager.OperationManager;
+import com.github.tehArchitecht.jdbcbankingapp.logic.manager.UserManager;
+import com.github.tehArchitecht.jdbcbankingapp.security.SecurityManager;
 import com.github.tehArchitecht.jdbcbankingapp.security.SecurityToken;
-import com.github.tehArchitecht.jdbcbankingapp.logic.service.BankService;
 import org.apache.log4j.Logger;
 
 import java.io.InputStream;
@@ -25,7 +28,9 @@ public class BankTui {
     private final InputReader in;
     private final PrintStream out;
 
-    private final BankService bankService;
+    private final UserManager userManager;
+    private final AccountManager accountManager;
+    private final OperationManager operationManager;
 
     private SecurityToken token = null;
     private boolean running;
@@ -33,7 +38,11 @@ public class BankTui {
     public BankTui(InputStream in, PrintStream out) {
         this.in = new InputReader(in);
         this.out = out;
-        this.bankService = new BankService();
+
+        final SecurityManager securityManager = new SecurityManager();
+        this.userManager = new UserManager(securityManager);
+        this.accountManager = new AccountManager(securityManager);
+        this.operationManager = new OperationManager(securityManager);
     }
 
     // -------------------------------------------------------------------------------------------------------------- //
@@ -117,7 +126,7 @@ public class BankTui {
         out.print("Введите адрес: ");
         request.setAddress(inputAddress());
 
-        Status status = bankService.signUp(request);
+        Status status = userManager.signUp(request);
         displayStatus(status);
     }
 
@@ -146,7 +155,7 @@ public class BankTui {
         out.print("Введите пароль: ");
         request.setPassword(inputPassword());
 
-        Result<SecurityToken> result = bankService.signInWithName(request);
+        Result<SecurityToken> result = userManager.signInWithName(request);
         token = result.getData();
 
         displayStatus(result);
@@ -162,7 +171,7 @@ public class BankTui {
         out.print("Введите пароль: ");
         request.setPassword(inputPassword());
 
-        Result<SecurityToken> result = bankService.signWithPhoneNumber(request);
+        Result<SecurityToken> result = userManager.signWithPhoneNumber(request);
         token = result.getData();
 
         displayStatus(result);
@@ -179,7 +188,7 @@ public class BankTui {
         out.print("Введите валюту (EUR, RUB, USD): ");
         request.setCurrency(inputCurrency());
 
-        Status status = bankService.createAccount(token, request);
+        Status status = accountManager.createAccount(token, request);
         displayStatus(status);
     }
 
@@ -191,7 +200,7 @@ public class BankTui {
         if (accountId == null) return;
         request.setAccountId(accountId);
 
-        Status status = bankService.setPrimaryAccount(token, request);
+        Status status = accountManager.setPrimaryAccount(token, request);
         displayStatus(status);
     }
 
@@ -209,7 +218,7 @@ public class BankTui {
         out.print("Введите сумму: ");
         request.setAmount(inputFunds());
 
-        Status status = bankService.depositFunds(token, request);
+        Status status = operationManager.depositFunds(token, request);
         out.println(StatusMapper.statusToString(status));
     }
 
@@ -230,14 +239,14 @@ public class BankTui {
         out.print("Введите сумму: ");
         request.setAmount(inputFunds());
 
-        Status status = bankService.transferFunds(token, request);
+        Status status = operationManager.transferFunds(token, request);
         displayStatus(status);
     }
 
     private void displayOperationHistory() {
         out.println("-- Просмотр истории операций --");
 
-        Result<List<OperationDto>> result = bankService.getUserOperations(token);
+        Result<List<OperationDto>> result = operationManager.getUserOperations(token);
         if (handleFailedResult(result)) return;
 
         List<OperationDto> operations = result.getData();
@@ -252,7 +261,7 @@ public class BankTui {
     private void displayUserAccounts() {
         out.println("-- Просмотр счетов --");
 
-        Result<List<AccountDto>> result = bankService.getUserAccounts(token);
+        Result<List<AccountDto>> result = accountManager.getUserAccounts(token);
         if (handleFailedResult(result)) return;
 
         List<AccountDto> accounts = result.getData();
@@ -267,7 +276,7 @@ public class BankTui {
     private void signOut() {
         out.println("-- Выход из аккаунта --");
 
-        bankService.signOut(token);
+        userManager.signOut(token);
         token = null;
         out.println("Вы успешно вышли из системы.");
     }
@@ -286,7 +295,7 @@ public class BankTui {
     private void waitForEnter() { in.readLine(); }
 
     private UUID selectAccount(String message) {
-        Result<List<AccountDto>> result = bankService.getUserAccounts(token);
+        Result<List<AccountDto>> result = accountManager.getUserAccounts(token);
         if (handleFailedResult(result)) return null;
 
         List<AccountDto> accounts = result.getData();
