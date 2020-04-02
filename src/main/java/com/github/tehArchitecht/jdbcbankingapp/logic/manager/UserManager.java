@@ -15,9 +15,11 @@ import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.Optional;
 
-public class UserManager extends Manager {
+public class UserManager {
+    private final SecurityManager securityManager;
+
     public UserManager(SecurityManager securityManager) {
-        super(securityManager);
+        this.securityManager = securityManager;
     }
 
     public Status signUp(SignUpRequest request) {

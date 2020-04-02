@@ -21,9 +21,11 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class AccountManager extends Manager {
+public class AccountManager {
+    private final SecurityManager securityManager;
+
     public AccountManager(SecurityManager securityManager) {
-        super(securityManager);
+        this.securityManager = securityManager;
     }
 
     public Result<List<AccountDto>> getUserAccounts(SecurityToken token) {

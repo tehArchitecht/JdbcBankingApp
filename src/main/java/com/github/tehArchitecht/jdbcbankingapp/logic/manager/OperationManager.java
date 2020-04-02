@@ -27,9 +27,11 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class OperationManager extends Manager {
+public class OperationManager {
+    private final SecurityManager securityManager;
+
     public OperationManager(SecurityManager securityManager) {
-        super(securityManager);
+        this.securityManager = securityManager;
     }
 
     public Result<List<OperationDto>> getUserOperations(SecurityToken token) {
@@ -139,6 +141,10 @@ public class OperationManager extends Manager {
         }
     }
 
+    // -------------------------------------------------------------------------------------------------------------- //
+    // Helper methods                                                                                                 //
+    // -------------------------------------------------------------------------------------------------------------- //
+
     private static void logTransfer(Account sender, Account receiver, Currency currency, BigDecimal amount,
                                     BigDecimal senderInitialBalance, BigDecimal senderResultingBalance,
                                     BigDecimal receiverInitialBalance, BigDecimal receiverResultingBalance)
@@ -154,5 +160,25 @@ public class OperationManager extends Manager {
                 receiverInitialBalance,
                 receiverResultingBalance
         ));
+    }
+
+    protected Result<Account> getAccountEntity(SecurityToken token, UUID accountId) {
+        try {
+            if (securityManager.isTokenInvalid(token))
+                return Result.ofFailure(Status.FAILURE_BAD_TOKEN);
+            Long userId = securityManager.getUserId(token);
+
+            Optional<Account> optional = AccountService.get(accountId);
+            if (!optional.isPresent())
+                return Result.ofFailure(Status.FAILURE_INVALID_ACCOUNT_ID);
+
+            Account account = optional.get();
+            if (!account.getUserId().equals(userId))
+                return Result.ofFailure(Status.FAILURE_UNAUTHORIZED_ACCESS);
+
+            return Result.ofSuccess(null, account);
+        } catch (DataAccessException e) {
+            return Result.ofFailure(Status.FAILURE_INTERNAL_ERROR);
+        }
     }
 }
