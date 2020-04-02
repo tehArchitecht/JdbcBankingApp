@@ -37,14 +37,6 @@ public class BankService {
     // Registration and authorisation operations                                                                      //
     // -------------------------------------------------------------------------------------------------------------- //
 
-    public Result<Boolean> isNameInUse(String name) {
-        try {
-            return Result.ofSuccess(Status.IS_NAME_IN_USE_SUCCESS, UserService.isNameInUse(name));
-        } catch (DataAccessException e) {
-            return  Result.ofFailure(Status.FAILURE_INTERNAL_ERROR);
-        }
-    }
-
     public Status signUp(SignUpRequest request) {
         String userName = request.getUserName();
         String phoneNumber = request.getPhoneNumber();
@@ -117,7 +109,7 @@ public class BankService {
     public Result<List<AccountDto>> getUserAccounts(SecurityToken token) {
         try {
             if (securityManager.isTokenInvalid(token))
-                return Result.ofFailure(Status.BAD_TOKEN);
+                return Result.ofFailure(Status.FAILURE_BAD_TOKEN);
             Long userId = securityManager.getUserId(token);
 
             Optional<User> optional = UserRepository.findById(userId);
@@ -138,7 +130,7 @@ public class BankService {
     public Result<List<OperationDto>> getUserOperations(SecurityToken token) {
         try {
             if (securityManager.isTokenInvalid(token))
-                return Result.ofFailure(Status.BAD_TOKEN);
+                return Result.ofFailure(Status.FAILURE_BAD_TOKEN);
             Long userId = securityManager.getUserId(token);
 
             List<Account> accounts = AccountService.getUserAccounts(userId);
@@ -170,7 +162,7 @@ public class BankService {
 
         try {
             if (securityManager.isTokenInvalid(token))
-                return Status.BAD_TOKEN;
+                return Status.FAILURE_BAD_TOKEN;
             Long userId = securityManager.getUserId(token);
 
             AccountService.add(new Account(userId, currency));
@@ -185,7 +177,7 @@ public class BankService {
 
         try {
             if (securityManager.isTokenInvalid(token))
-                return Status.BAD_TOKEN;
+                return Status.FAILURE_BAD_TOKEN;
             Long userId = securityManager.getUserId(token);
 
             UserService.setPrimaryAccountId(userId, accountId);
@@ -237,10 +229,6 @@ public class BankService {
                 return Status.TRANSFER_FUNDS_FAILURE_INVALID_PHONE_NUMBER;
             User receiver = userOptional.get();
 
-            int count = AccountService.countUserAccounts(receiver.getId());
-            if (count == 0)
-                return Status.TRANSFER_FUNDS_FAILURE_RECEIVER_HAS_NO_ACCOUNTS;
-
             Optional<Account> accountOptional = AccountService.getUserPrimaryAccount(receiver.getId());
             if (!accountOptional.isPresent())
                 return Status.TRANSFER_FUNDS_FAILURE_RECEIVER_HAS_NO_PRIMARY_ACCOUNT;
@@ -251,6 +239,7 @@ public class BankService {
 
             BigDecimal senderInitialBalance = senderAccount.getBalance();
             BigDecimal receiverInitialBalance = receiverAccount.getBalance();
+
             Currency senderCurrency = senderAccount.getCurrency();
             Currency receiverCurrency = receiverAccount.getCurrency();
 
@@ -311,7 +300,7 @@ public class BankService {
     private Result<Account> getAccountEntity(SecurityToken token, UUID accountId) {
         try {
             if (securityManager.isTokenInvalid(token))
-                return Result.ofFailure(Status.BAD_TOKEN);
+                return Result.ofFailure(Status.FAILURE_BAD_TOKEN);
             Long userId = securityManager.getUserId(token);
 
             Optional<Account> optional = AccountService.get(accountId);
@@ -322,7 +311,7 @@ public class BankService {
             if (!account.getUserId().equals(userId))
                 return Result.ofFailure(Status.FAILURE_UNAUTHORIZED_ACCESS);
 
-            return Result.ofSuccess(Status.SUCCESS, account);
+            return Result.ofSuccess(null, account);
         } catch (DataAccessException e) {
             return Result.ofFailure(Status.FAILURE_INTERNAL_ERROR);
         }

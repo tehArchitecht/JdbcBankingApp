@@ -108,25 +108,17 @@ public class BankTui {
         out.print("Введите логин: ");
         request.setUserName(inputUserName());
 
-        Result<Boolean> result = bankService.isNameInUse(request.getUserName());
-        if (handleFailedResult(result)) return;
+        out.print("Введите пароль: ");
+        request.setPassword(inputPassword());
 
-        boolean nameTaken = result.getData();
-        if (nameTaken) {
-            out.println("Ошибка. Пользователь с таким именем уже существует.");
-        } else {
-            out.print("Введите пароль: ");
-            request.setPassword(inputPassword());
+        out.print("Введите телефон: ");
+        request.setPhoneNumber(inputPhoneNumber());
 
-            out.print("Введите телефон: ");
-            request.setPhoneNumber(inputPhoneNumber());
+        out.print("Введите адрес: ");
+        request.setAddress(inputAddress());
 
-            out.print("Введите адрес: ");
-            request.setAddress(inputAddress());
-
-            Status status = bankService.signUp(request);
-            displayStatus(status);
-        }
+        Status status = bankService.signUp(request);
+        displayStatus(status);
     }
 
     private void signIn() {
@@ -155,10 +147,9 @@ public class BankTui {
         request.setPassword(inputPassword());
 
         Result<SecurityToken> result = bankService.signInWithName(request);
-        if (handleFailedResult(result)) return;
-
         token = result.getData();
-        out.println("Вы успешно вошли в систему.");
+
+        displayStatus(result);
     }
 
     private void signInWithPhoneNumber() {
@@ -172,10 +163,9 @@ public class BankTui {
         request.setPassword(inputPassword());
 
         Result<SecurityToken> result = bankService.signWithPhoneNumber(request);
-        if (handleFailedResult(result)) return;
-
         token = result.getData();
-        out.println("Вы успешно вошли в систему.");
+
+        displayStatus(result);
     }
 
     // -------------------------------------------------------------------------------------------------------------- //

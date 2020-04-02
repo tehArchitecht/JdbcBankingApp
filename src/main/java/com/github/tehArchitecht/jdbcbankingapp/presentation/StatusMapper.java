@@ -11,7 +11,7 @@ public class StatusMapper {
     public static String statusToString(Status status) {
         switch (status) {
             // status values shared by methods
-            case BAD_TOKEN:
+            case FAILURE_BAD_TOKEN:
                 return "Ошибка. Недействительный токен. Попробуйте заново войти в систему.";
             case FAILURE_INTERNAL_ERROR:
                 return "Ошибка. Произошёл сбой в системе.";
@@ -19,9 +19,6 @@ public class StatusMapper {
                 return "Ошибка. Такого аккаунта не существует.";
             case FAILURE_UNAUTHORIZED_ACCESS:
                 return "Ошибка. Несанкционированный доступ.";
-            // isNameInUse
-            case IS_NAME_IN_USE_SUCCESS:
-                return null;
             // signUp
             case SIGN_UP_SUCCESS:
                 return "Регистрация прошла успешно.";
@@ -57,17 +54,12 @@ public class StatusMapper {
                 return "Перевод прошел успешно.";
             case TRANSFER_FUNDS_FAILURE_INVALID_PHONE_NUMBER:
                 return "Ошибка. Пользователя с таким номером телефона не существует.";
-            case TRANSFER_FUNDS_FAILURE_RECEIVER_HAS_NO_ACCOUNTS:
-                return "Ошибка. У получателя нет счетов в системе.";
             case TRANSFER_FUNDS_FAILURE_RECEIVER_HAS_NO_PRIMARY_ACCOUNT:
                 return "Ошибка. У получателя нет основного счёта.";
             case TRANSFER_FUNDS_FAILURE_SAME_ACCOUNT:
                 return "Ошибка. Попытка перевода средств на счёт списания.";
             case TRANSFER_FUNDS_FAILURE_INSUFFICIENT_FUNDS:
                 return "Ошибка. На счету недостаточно средств.";
-            // helper status values
-            case SUCCESS:
-                return null;
             // default
             default: throw new IllegalArgumentException(status.toString());
         }
