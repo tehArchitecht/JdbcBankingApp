@@ -2,10 +2,8 @@ package com.github.tehArchitecht.jdbcbankingapp.logic.service;
 
 import com.github.tehArchitecht.jdbcbankingapp.data.exception.DataAccessException;
 import com.github.tehArchitecht.jdbcbankingapp.data.model.User;
-import com.github.tehArchitecht.jdbcbankingapp.data.repository.AccountRepository;
 import com.github.tehArchitecht.jdbcbankingapp.data.repository.UserRepository;
 
-import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.UUID;
 

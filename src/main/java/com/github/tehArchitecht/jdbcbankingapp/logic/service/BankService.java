@@ -7,6 +7,7 @@ import com.github.tehArchitecht.jdbcbankingapp.data.model.Operation;
 import com.github.tehArchitecht.jdbcbankingapp.data.model.User;
 import com.github.tehArchitecht.jdbcbankingapp.data.repository.UserRepository;
 import com.github.tehArchitecht.jdbcbankingapp.logic.CurrencyConverter;
+import com.github.tehArchitecht.jdbcbankingapp.logic.EntityMapper;
 import com.github.tehArchitecht.jdbcbankingapp.logic.Result;
 import com.github.tehArchitecht.jdbcbankingapp.logic.Status;
 import com.github.tehArchitecht.jdbcbankingapp.logic.dto.request.*;
@@ -52,7 +53,7 @@ public class BankService {
             if (UserService.isNameInUse(userName) || UserService.isPhoneNumberInUse(phoneNumber))
                 return Status.SING_UP_FAILURE_NAME_OR_PHONE_NUMBER_TAKEN;
 
-            User user = extractUser(request);
+            User user = EntityMapper.extractUser(request);
             user.setPassword(BCrypt.hashpw(user.getPassword(), BCrypt.gensalt()));
             UserService.add(user);
             return Status.SIGN_UP_SUCCESS;
@@ -126,7 +127,7 @@ public class BankService {
 
             List<Account> accounts = AccountService.getUserAccounts(userId);
             List<AccountDto> accountDtos = accounts.stream()
-                    .map((Account account) -> convertAccount(account, primaryAccountId))
+                    .map((Account account) -> EntityMapper.convertAccount(account, primaryAccountId))
                     .collect(Collectors.toList());
             return Result.ofSuccess(Status.GET_USER_ACCOUNTS_SUCCESS, accountDtos);
         } catch (DataAccessException e) {
@@ -147,7 +148,7 @@ public class BankService {
                 List<Operation> operations = OperationService.findAllByAccountId(accountId);
                 stream = Stream.concat(
                         stream,
-                        operations.stream().map(op -> convertOperation(op, accountId))
+                        operations.stream().map(op -> EntityMapper.convertOperation(op, accountId))
                 );
             }
 
@@ -324,48 +325,6 @@ public class BankService {
             return Result.ofSuccess(Status.SUCCESS, account);
         } catch (DataAccessException e) {
             return Result.ofFailure(Status.FAILURE_INTERNAL_ERROR);
-        }
-    }
-
-    private User extractUser(SignUpRequest request) {
-        return new User(
-                request.getUserName(),
-                request.getPassword(),
-                request.getAddress(),
-                request.getPhoneNumber()
-        );
-    }
-
-    private AccountDto convertAccount(Account account, UUID primaryAccountId) {
-        return new AccountDto(
-                account.getId(),
-                account.getBalance(),
-                account.getCurrency(),
-                account.getId().equals(primaryAccountId)
-        );
-    }
-
-    private OperationDto convertOperation(Operation operation, UUID accountId) {
-        if (accountId.equals(operation.getSenderAccountId())) {
-            return new OperationDto(
-                    operation.getDate(),
-                    operation.getCurrency(),
-                    operation.getSenderAccountId(),
-                    operation.getReceiverAccountId(),
-                    operation.getAmount(),
-                    operation.getSenderInitialBalance(),
-                    operation.getSenderResultingBalance()
-            );
-        } else {
-            return new OperationDto(
-                    operation.getDate(),
-                    operation.getCurrency(),
-                    operation.getSenderAccountId(),
-                    operation.getReceiverAccountId(),
-                    operation.getAmount(),
-                    operation.getReceiverInitialBalance(),
-                    operation.getReceiverResultingBalance()
-            );
         }
     }
 }

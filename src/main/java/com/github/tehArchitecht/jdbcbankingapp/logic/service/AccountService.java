@@ -7,7 +7,6 @@ import com.github.tehArchitecht.jdbcbankingapp.data.repository.AccountRepository
 import com.github.tehArchitecht.jdbcbankingapp.data.repository.UserRepository;
 
 import java.math.BigDecimal;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
