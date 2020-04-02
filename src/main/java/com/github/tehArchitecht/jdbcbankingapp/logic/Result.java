@@ -2,7 +2,7 @@ package com.github.tehArchitecht.jdbcbankingapp.logic;
 
 /**
  * Represents results (status and possibly a value) of BankService operations.
- * Result objects are created using factory methods: ofSuccess, ofFailure, fromOptional.
+ * Result objects are created using factory methods: ofSuccess, ofFailure.
  */
 public class Result<T> {
     private final Status status;

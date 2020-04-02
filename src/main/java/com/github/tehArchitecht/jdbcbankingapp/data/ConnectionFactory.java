@@ -10,7 +10,7 @@ import org.h2.jdbcx.JdbcConnectionPool;
 /**
  * Used to connect to the database (by url from the property file at
  * PROPERTY_FILE_PATH). Provides a single static method getConnection to
- * retrieve an SQLException object.
+ * retrieve a Connection object.
  */
 public class ConnectionFactory {
     private static final String PROPERTY_FILE_PATH = "db.properties";

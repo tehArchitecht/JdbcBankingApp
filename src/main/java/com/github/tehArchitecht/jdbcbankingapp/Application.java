@@ -5,7 +5,7 @@ import com.github.tehArchitecht.jdbcbankingapp.presentation.BankTui;
 
 public class Application {
     public static void main(String[] args) {
-        DbInitializer.Initialize();
+        DbInitializer.initialize();
         new BankTui(System.in, System.out).run();
     }
 }

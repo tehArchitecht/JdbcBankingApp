@@ -18,7 +18,7 @@ public class DbInitializer {
 
     private static final String SCRIPT_PATH = "create-schema.sql";
 
-    public static void Initialize() {
+    public static void initialize() {
         InputStreamReader scriptStreamReader = new InputStreamReader(ResourceLoader.getResource(SCRIPT_PATH));
         ScriptReader scriptReader = new ScriptReader(scriptStreamReader);
 
