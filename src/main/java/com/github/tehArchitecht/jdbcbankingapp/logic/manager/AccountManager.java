@@ -34,10 +34,10 @@ public class AccountManager extends ValidatingManager {
                 return Result.ofFailure(Status.FAILURE_BAD_TOKEN);
             Long userId = securityManager.getUserId(token);
 
-            Optional<User> optional = UserRepository.findById(userId);
+            Optional<Account> optional = AccountService.getUserPrimaryAccount(userId);
             if (!optional.isPresent())
                 return Result.ofFailure(Status.FAILURE_INTERNAL_ERROR);
-            UUID primaryAccountId = optional.get().getPrimaryAccountId();
+            UUID primaryAccountId = optional.get().getId();
 
             List<Account> accounts = AccountService.getUserAccounts(userId);
             List<AccountDto> accountDtos = accounts.stream()
