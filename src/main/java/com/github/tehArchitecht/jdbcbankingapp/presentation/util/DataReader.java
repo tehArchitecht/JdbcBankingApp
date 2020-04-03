@@ -1,4 +1,4 @@
-package com.github.tehArchitecht.jdbcbankingapp.presentation;
+package com.github.tehArchitecht.jdbcbankingapp.presentation.util;
 
 import com.github.tehArchitecht.jdbcbankingapp.data.model.Currency;
 
@@ -6,10 +6,14 @@ import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.Scanner;
 
-public class InputReader {
+/**
+ * Provides uniform methods for reading objects used by the TUI from an
+ * InputStream object.
+ */
+public class DataReader {
     private final Scanner in;
 
-    public InputReader(InputStream inputStream) {
+    public DataReader(InputStream inputStream) {
         in = new Scanner(inputStream);
     }
 

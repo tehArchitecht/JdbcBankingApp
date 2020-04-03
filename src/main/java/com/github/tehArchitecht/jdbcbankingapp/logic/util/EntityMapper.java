@@ -1,4 +1,4 @@
-package com.github.tehArchitecht.jdbcbankingapp.logic;
+package com.github.tehArchitecht.jdbcbankingapp.logic.util;
 
 import com.github.tehArchitecht.jdbcbankingapp.data.model.Account;
 import com.github.tehArchitecht.jdbcbankingapp.data.model.Operation;
@@ -9,6 +9,9 @@ import com.github.tehArchitecht.jdbcbankingapp.logic.dto.response.OperationDto;
 
 import java.util.UUID;
 
+/**
+ * Provides mapping methods for converting between DTO and entity objects.
+ */
 public class EntityMapper {
     public static User extractUser(SignUpRequest request) {
         return new User(

@@ -1,4 +1,4 @@
-package com.github.tehArchitecht.jdbcbankingapp.data;
+package com.github.tehArchitecht.jdbcbankingapp.data.util;
 
 import org.apache.log4j.Logger;
 

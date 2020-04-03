@@ -1,4 +1,4 @@
-package com.github.tehArchitecht.jdbcbankingapp.presentation;
+package com.github.tehArchitecht.jdbcbankingapp.presentation.util;
 
 import com.github.tehArchitecht.jdbcbankingapp.logic.Result;
 import com.github.tehArchitecht.jdbcbankingapp.logic.Status;

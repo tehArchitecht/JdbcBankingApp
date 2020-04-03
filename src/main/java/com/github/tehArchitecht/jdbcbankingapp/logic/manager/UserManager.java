@@ -2,7 +2,7 @@ package com.github.tehArchitecht.jdbcbankingapp.logic.manager;
 
 import com.github.tehArchitecht.jdbcbankingapp.data.exception.DataAccessException;
 import com.github.tehArchitecht.jdbcbankingapp.data.model.User;
-import com.github.tehArchitecht.jdbcbankingapp.logic.EntityMapper;
+import com.github.tehArchitecht.jdbcbankingapp.logic.util.EntityMapper;
 import com.github.tehArchitecht.jdbcbankingapp.logic.Result;
 import com.github.tehArchitecht.jdbcbankingapp.logic.Status;
 import com.github.tehArchitecht.jdbcbankingapp.logic.dto.request.SignInWithNameRequest;

@@ -1,5 +1,6 @@
 package com.github.tehArchitecht.jdbcbankingapp.data;
 
+import com.github.tehArchitecht.jdbcbankingapp.data.util.DbUtils;
 import com.github.tehArchitecht.jdbcbankingapp.util.ResourceLoader;
 import org.apache.log4j.Logger;
 import org.h2.util.ScriptReader;

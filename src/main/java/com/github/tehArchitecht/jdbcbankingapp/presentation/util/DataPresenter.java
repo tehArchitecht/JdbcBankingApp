@@ -1,4 +1,4 @@
-package com.github.tehArchitecht.jdbcbankingapp.presentation;
+package com.github.tehArchitecht.jdbcbankingapp.presentation.util;
 
 import com.github.tehArchitecht.jdbcbankingapp.data.model.Currency;
 import com.github.tehArchitecht.jdbcbankingapp.logic.dto.response.AccountDto;
@@ -15,7 +15,7 @@ import java.util.UUID;
  * Provides textual representation for various objects displayed by the BankTui
  * class (it's main purpose is to display operation tables).
  */
-class DataPresenter {
+public class DataPresenter {
     private static final int UUID_LENGTH = 36;
     private static final int SUBSTRING_LENGTH = 12;
     private static final int BEGIN_INDEX = UUID_LENGTH - SUBSTRING_LENGTH;

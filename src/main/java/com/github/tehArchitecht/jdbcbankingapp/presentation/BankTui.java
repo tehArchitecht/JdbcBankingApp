@@ -9,6 +9,9 @@ import com.github.tehArchitecht.jdbcbankingapp.logic.dto.response.OperationDto;
 import com.github.tehArchitecht.jdbcbankingapp.logic.manager.AccountManager;
 import com.github.tehArchitecht.jdbcbankingapp.logic.manager.OperationManager;
 import com.github.tehArchitecht.jdbcbankingapp.logic.manager.UserManager;
+import com.github.tehArchitecht.jdbcbankingapp.presentation.util.DataPresenter;
+import com.github.tehArchitecht.jdbcbankingapp.presentation.util.DataReader;
+import com.github.tehArchitecht.jdbcbankingapp.presentation.util.StatusMapper;
 import com.github.tehArchitecht.jdbcbankingapp.security.SecurityManager;
 import com.github.tehArchitecht.jdbcbankingapp.security.SecurityToken;
 import org.apache.log4j.Logger;
@@ -25,7 +28,7 @@ import java.util.UUID;
 public class BankTui {
     private final static Logger logger = Logger.getLogger(BankTui.class);
 
-    private final InputReader in;
+    private final DataReader in;
     private final PrintStream out;
 
     private final UserManager userManager;
@@ -36,7 +39,7 @@ public class BankTui {
     private boolean running;
 
     public BankTui(InputStream in, PrintStream out) {
-        this.in = new InputReader(in);
+        this.in = new DataReader(in);
         this.out = out;
 
         final SecurityManager securityManager = new SecurityManager();

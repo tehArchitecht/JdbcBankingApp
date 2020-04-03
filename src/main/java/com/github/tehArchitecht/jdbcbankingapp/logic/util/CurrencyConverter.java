@@ -1,4 +1,4 @@
-package com.github.tehArchitecht.jdbcbankingapp.logic;
+package com.github.tehArchitecht.jdbcbankingapp.logic.util;
 
 import com.github.tehArchitecht.jdbcbankingapp.data.model.Currency;
 

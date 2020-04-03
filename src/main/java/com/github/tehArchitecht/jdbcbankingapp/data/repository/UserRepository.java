@@ -2,7 +2,7 @@ package com.github.tehArchitecht.jdbcbankingapp.data.repository;
 
 import com.github.tehArchitecht.jdbcbankingapp.data.ConnectionFactory;
 import com.github.tehArchitecht.jdbcbankingapp.data.exception.DataAccessException;
-import com.github.tehArchitecht.jdbcbankingapp.data.DbUtils;
+import com.github.tehArchitecht.jdbcbankingapp.data.util.DbUtils;
 import com.github.tehArchitecht.jdbcbankingapp.data.model.User;
 import org.apache.log4j.Logger;
 

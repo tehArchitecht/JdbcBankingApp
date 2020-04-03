@@ -5,7 +5,7 @@ import com.github.tehArchitecht.jdbcbankingapp.data.model.Account;
 import com.github.tehArchitecht.jdbcbankingapp.data.model.Currency;
 import com.github.tehArchitecht.jdbcbankingapp.data.model.User;
 import com.github.tehArchitecht.jdbcbankingapp.data.repository.UserRepository;
-import com.github.tehArchitecht.jdbcbankingapp.logic.EntityMapper;
+import com.github.tehArchitecht.jdbcbankingapp.logic.util.EntityMapper;
 import com.github.tehArchitecht.jdbcbankingapp.logic.Result;
 import com.github.tehArchitecht.jdbcbankingapp.logic.Status;
 import com.github.tehArchitecht.jdbcbankingapp.logic.dto.request.CreateAccountRequest;
