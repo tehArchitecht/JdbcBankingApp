@@ -27,7 +27,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class OperationManager {
+public class OperationManager extends ValidatingManager {
     private final SecurityManager securityManager;
 
     public OperationManager(SecurityManager securityManager) {
@@ -61,6 +61,9 @@ public class OperationManager {
     }
 
     public Status depositFunds(SecurityToken token, DepositFundsRequest request) {
+        if (request == null || hasConstraintViolations(request))
+            return Status.FAILURE_VALIDATION_ERROR;
+
         UUID accountId = request.getAccountId();
         BigDecimal amount = request.getAmount();
         Currency currency = request.getCurrency();
@@ -82,6 +85,9 @@ public class OperationManager {
     }
 
     public Status transferFunds(SecurityToken token, TransferFundsRequest request) {
+        if (request == null || hasConstraintViolations(request))
+            return Status.FAILURE_VALIDATION_ERROR;
+
         UUID senderAccountId = request.getSenderAccountId();
         String receiverPhoneNumber = request.getReceiverPhoneNumber();
         BigDecimal amount = request.getAmount();

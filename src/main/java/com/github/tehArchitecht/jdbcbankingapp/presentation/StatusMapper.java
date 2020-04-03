@@ -19,6 +19,8 @@ public class StatusMapper {
                 return "Ошибка. Такого аккаунта не существует.";
             case FAILURE_UNAUTHORIZED_ACCESS:
                 return "Ошибка. Несанкционированный доступ.";
+            case FAILURE_VALIDATION_ERROR:
+                return "Ошибка валидации. В запросе присутствуют пустые поля либо неположительные значения.";
             // signUp
             case SIGN_UP_SUCCESS:
                 return "Регистрация прошла успешно.";

@@ -21,7 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class AccountManager {
+public class AccountManager extends ValidatingManager {
     private final SecurityManager securityManager;
 
     public AccountManager(SecurityManager securityManager) {
@@ -50,6 +50,9 @@ public class AccountManager {
     }
 
     public Status createAccount(SecurityToken token, CreateAccountRequest request) {
+        if (request == null || hasConstraintViolations(request))
+            return Status.FAILURE_VALIDATION_ERROR;
+
         Currency currency = request.getCurrency();
 
         try {
@@ -65,6 +68,9 @@ public class AccountManager {
     }
 
     public Status setPrimaryAccount(SecurityToken token, SetPrimaryAccountRequest request) {
+        if (request == null || hasConstraintViolations(request))
+            return Status.FAILURE_VALIDATION_ERROR;
+
         UUID accountId = request.getAccountId();
 
         try {

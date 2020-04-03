@@ -15,7 +15,7 @@ import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.Optional;
 
-public class UserManager {
+public class UserManager extends ValidatingManager {
     private final SecurityManager securityManager;
 
     public UserManager(SecurityManager securityManager) {
@@ -23,6 +23,9 @@ public class UserManager {
     }
 
     public Status signUp(SignUpRequest request) {
+        if (request == null || hasConstraintViolations(request))
+            return Status.FAILURE_VALIDATION_ERROR;
+
         String userName = request.getUserName();
         String phoneNumber = request.getPhoneNumber();
 
@@ -40,6 +43,9 @@ public class UserManager {
     }
 
     public Result<SecurityToken> signInWithName(SignInWithNameRequest request) {
+        if (request == null || hasConstraintViolations(request))
+            return Result.ofFailure(Status.FAILURE_VALIDATION_ERROR);
+
         String userName = request.getUserName();
         String password = request.getPassword();
 
@@ -56,6 +62,9 @@ public class UserManager {
     }
 
     public Result<SecurityToken> signWithPhoneNumber(SignInWithPhoneNumberRequest request) {
+        if (request == null || hasConstraintViolations(request))
+            return Result.ofFailure(Status.FAILURE_VALIDATION_ERROR);
+
         String phoneNumber = request.getPhoneNumber();
         String password = request.getPassword();
 
