@@ -3,8 +3,6 @@ package com.github.tehArchitecht.jdbcbankingapp.logic.manager;
 import com.github.tehArchitecht.jdbcbankingapp.data.exception.DataAccessException;
 import com.github.tehArchitecht.jdbcbankingapp.data.model.Account;
 import com.github.tehArchitecht.jdbcbankingapp.data.model.Currency;
-import com.github.tehArchitecht.jdbcbankingapp.data.model.User;
-import com.github.tehArchitecht.jdbcbankingapp.data.repository.UserRepository;
 import com.github.tehArchitecht.jdbcbankingapp.logic.util.EntityMapper;
 import com.github.tehArchitecht.jdbcbankingapp.logic.Result;
 import com.github.tehArchitecht.jdbcbankingapp.logic.Status;
@@ -78,10 +76,30 @@ public class AccountManager extends ValidatingManager {
                 return Status.FAILURE_BAD_TOKEN;
             Long userId = securityManager.getUserId(token);
 
+            Result<Boolean> result = canAccessAccount(userId, accountId);
+            if (result.failure())
+                return result.getStatus();
+
             UserService.setPrimaryAccountId(userId, accountId);
             return Status.SET_PRIMARY_ACCOUNT_SUCCESS;
         } catch (DataAccessException e) {
             return Status.FAILURE_INTERNAL_ERROR;
+        }
+    }
+
+    private Result<Boolean> canAccessAccount(Long userId, UUID accountId) {
+        try {
+            Optional<Account> optional = AccountService.get(accountId);
+            if (!optional.isPresent())
+                return Result.ofFailure(Status.FAILURE_INVALID_ACCOUNT_ID);
+
+            Account account = optional.get();
+            if (!account.getUserId().equals(userId))
+                return Result.ofFailure(Status.FAILURE_UNAUTHORIZED_ACCESS);
+
+            return Result.ofSuccess(null, true);
+        } catch (DataAccessException e) {
+            return Result.ofFailure(Status.FAILURE_INTERNAL_ERROR);
         }
     }
 }
