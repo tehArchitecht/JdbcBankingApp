@@ -13,8 +13,8 @@ import com.github.tehArchitecht.jdbcbankingapp.logic.dto.request.SetPrimaryAccou
 import com.github.tehArchitecht.jdbcbankingapp.logic.dto.response.AccountDto;
 import com.github.tehArchitecht.jdbcbankingapp.security.SecurityManager;
 import com.github.tehArchitecht.jdbcbankingapp.security.SecurityToken;
-import com.github.tehArchitecht.jdbcbankingapp.service.AccountService;
-import com.github.tehArchitecht.jdbcbankingapp.service.UserService;
+import com.github.tehArchitecht.jdbcbankingapp.logic.service.AccountService;
+import com.github.tehArchitecht.jdbcbankingapp.logic.service.UserService;
 
 import java.util.List;
 import java.util.Optional;

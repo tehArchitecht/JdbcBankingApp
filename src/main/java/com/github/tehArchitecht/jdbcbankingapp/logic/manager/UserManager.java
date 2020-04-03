@@ -10,7 +10,7 @@ import com.github.tehArchitecht.jdbcbankingapp.logic.dto.request.SignInWithPhone
 import com.github.tehArchitecht.jdbcbankingapp.logic.dto.request.SignUpRequest;
 import com.github.tehArchitecht.jdbcbankingapp.security.SecurityManager;
 import com.github.tehArchitecht.jdbcbankingapp.security.SecurityToken;
-import com.github.tehArchitecht.jdbcbankingapp.service.UserService;
+import com.github.tehArchitecht.jdbcbankingapp.logic.service.UserService;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.Optional;

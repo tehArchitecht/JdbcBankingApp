@@ -1,4 +1,4 @@
-package com.github.tehArchitecht.jdbcbankingapp.service;
+package com.github.tehArchitecht.jdbcbankingapp.logic.service;
 
 import com.github.tehArchitecht.jdbcbankingapp.data.exception.DataAccessException;
 import com.github.tehArchitecht.jdbcbankingapp.data.model.User;

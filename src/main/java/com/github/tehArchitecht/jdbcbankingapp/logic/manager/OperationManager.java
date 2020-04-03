@@ -14,9 +14,9 @@ import com.github.tehArchitecht.jdbcbankingapp.logic.dto.request.TransferFundsRe
 import com.github.tehArchitecht.jdbcbankingapp.logic.dto.response.OperationDto;
 import com.github.tehArchitecht.jdbcbankingapp.security.SecurityManager;
 import com.github.tehArchitecht.jdbcbankingapp.security.SecurityToken;
-import com.github.tehArchitecht.jdbcbankingapp.service.AccountService;
-import com.github.tehArchitecht.jdbcbankingapp.service.OperationService;
-import com.github.tehArchitecht.jdbcbankingapp.service.UserService;
+import com.github.tehArchitecht.jdbcbankingapp.logic.service.AccountService;
+import com.github.tehArchitecht.jdbcbankingapp.logic.service.OperationService;
+import com.github.tehArchitecht.jdbcbankingapp.logic.service.UserService;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
